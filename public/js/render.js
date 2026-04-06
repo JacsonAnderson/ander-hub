@@ -24,14 +24,14 @@ const Render = {
     const imgHtml = hasImage
       ? `<img src="${prod.cover_image}" alt="${prod.name}" class="prod-img" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="prod-img" style="display:none">${prod.emoji || '📦'}</div>`
       : `<div class="prod-img">${prod.emoji || '📦'}</div>`;
-    return `<div class="card product-card" onclick="Render.openProductDetail(${prod.id})" style="cursor:pointer;">
+    return `<div class="card product-card" onclick="Render.openProductDetail('${prod.id}')" style="cursor:pointer;">
       ${imgHtml}
       <div class="prod-badge">${prod.category || 'Producto'}</div>
       <div class="prod-name">${prod.name}</div>
       <div class="prod-desc">${prod.description || ''}</div>
       <div class="prod-actions" onclick="event.stopPropagation()">
         <a href="${wa}" target="_blank" class="btn-wa-small"><i class="fab fa-whatsapp"></i> Consultar</a>
-        <button class="btn-ver-detalle" onclick="event.stopPropagation(); Render.openProductDetail(${prod.id})"><i class="fas fa-eye"></i> Ver</button>
+        <button class="btn-ver-detalle" onclick="event.stopPropagation(); Render.openProductDetail('${prod.id}')"><i class="fas fa-eye"></i> Ver</button>
       </div>
     </div>`;
   },
@@ -174,7 +174,7 @@ const Render = {
           <div class="tool-desc">${t.description || ''}</div>
           <div class="tool-meta">${t.file_type || ''} · ${t.file_size || ''}</div>
         </div>
-        <a href="${t.download_link || '#'}" target="_blank" class="btn-download" onclick="API.tools.download(${t.id})"><i class="fas fa-download"></i> Descargar</a>
+        <a href="${t.download_link || '#'}" target="_blank" class="btn-download" onclick="API.tools.download('${t.id}')"><i class="fas fa-download"></i> Descargar</a>
       </div>`).join('');
       const grid = document.getElementById('tools-grid');
       const modalGrid = document.getElementById('tools-modal-grid');
