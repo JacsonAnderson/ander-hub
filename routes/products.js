@@ -40,6 +40,22 @@ async function deleteFromStorage(url) {
   } catch (_) { /* silencioso */ }
 }
 
+// Helper: garante que o produto tem cover_image — busca da subcoleção se necessário
+// e já salva no documento para não precisar repetir a query na próxima vez
+async function ensureCoverImage(db, product) {
+  if (product.cover_image || product.image_url) return product;
+  const snap = await db.collection('products').doc(product.id)
+    .collection('images').orderBy('is_cover', 'desc').limit(1).get();
+  if (!snap.empty) {
+    const url = snap.docs[0].data().image_url || '';
+    if (url) {
+      await db.collection('products').doc(product.id).update({ cover_image: url });
+      return { ...product, cover_image: url };
+    }
+  }
+  return product;
+}
+
 // Helper: produto com suas imagens
 async function getProductFull(db, id) {
   const doc = await db.collection('products').doc(id).get();
@@ -66,6 +82,7 @@ router.get('/', async (req, res) => {
     const off = parseInt(offset) || 0;
     const lim = parseInt(limit);
     if (lim) products = products.slice(off, off + lim);
+    products = await Promise.all(products.map(p => ensureCoverImage(db, p)));
     res.json({ data: products, total });
   } catch (err) {
     res.status(500).json({ error: 'Error al obtener productos' });
@@ -77,9 +94,10 @@ router.get('/recent', async (req, res) => {
   try {
     const db = getDb();
     const snap = await db.collection('products').where('active', '==', true).get();
-    const products = snapToArr(snap)
+    let products = snapToArr(snap)
       .sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''))
       .slice(0, 4);
+    products = await Promise.all(products.map(p => ensureCoverImage(db, p)));
     res.json(products);
   } catch (err) {
     res.status(500).json({ error: 'Error al obtener productos recientes' });
