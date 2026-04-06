@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ander Instalaciones y Mantenimientos | jacsonander.com</title>
+<meta name="description" content="Servicios de instalación, mantenimiento de equipos y desarrollo de sistemas a medida en Paraguay.">
+<meta name="theme-color" content="#04091a">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="/css/main.css">
+<link rel="stylesheet" href="/css/sections.css">
+<link rel="stylesheet" href="/css/admin.css">
+<link rel="stylesheet" href="/css/mobile.css">
+</head>
+<body>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toast-container"></div>
+
+<!-- HAMBURGER -->
+<button class="menu-toggle" id="menu-toggle" onclick="Utils.toggleSidebar()">
+  <i class="fas fa-bars"></i>
+</button>
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="Utils.toggleSidebar()"></div>
+
+<!-- ========== SIDEBAR ========== -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon"><i class="fas fa-bolt"></i></div>
+    <h2>Ander Instalaciones<br>y Mantenimientos</h2>
+    <span>jacsonander.com</span>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Navegación</div>
+    <div class="nav-link active" onclick="Utils.scrollTo('about')"><i class="fas fa-user"></i> Sobre mí</div>
+    <div class="nav-link" onclick="Utils.scrollTo('productos')"><i class="fas fa-box"></i> Productos</div>
+    <div class="nav-link" onclick="Utils.scrollTo('servicios')"><i class="fas fa-tools"></i> Servicios</div>
+    <div class="nav-link" onclick="Utils.scrollTo('iptv')"><i class="fas fa-tv"></i> IPTV</div>
+    <div class="nav-link" onclick="Utils.scrollTo('herramientas')"><i class="fas fa-download"></i> Herramientas</div>
+    <div class="nav-link" onclick="Utils.scrollTo('social-media')"><i class="fas fa-share-alt"></i> Redes Sociales</div>
+    <div class="nav-link" onclick="Utils.scrollTo('proyectos')"><i class="fas fa-code"></i> Proyectos</div>
+    <div class="nav-link" onclick="Utils.scrollTo('videos')"><i class="fas fa-video"></i> Edición de Video</div>
+  </nav>
+  <div class="sidebar-bottom">
+    <button class="btn-login" id="btn-login-sidebar" onclick="Utils.openModal('modal-login')">
+      <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
+    </button>
+    <div class="user-info" id="user-info-sidebar">
+      <div class="user-avatar" id="user-avatar-text">U</div>
+      <div class="user-info-text">
+        <strong id="user-display-name">Usuario</strong>
+        <span id="user-display-role">Cliente</span>
+      </div>
+      <button class="btn-logout" onclick="Auth.logout()" title="Cerrar sesión"><i class="fas fa-sign-out-alt"></i></button>
+    </div>
+    <button class="btn-my-orders" id="btn-my-orders" onclick="Auth.showMyOrders()">
+      <i class="fas fa-receipt"></i> Mis Pedidos
+    </button>
+    <button class="btn-admin-panel" id="btn-admin-panel" onclick="Admin.open()">
+      <i class="fas fa-tachometer-alt"></i> Panel Admin
+    </button>
+  </div>
+</aside>
+
+<!-- ========== MAIN CONTENT ========== -->
+<main class="main">
+
+  <!-- ABOUT / HERO -->
+  <section id="about">
+    <div class="hero-content">
+      <div class="hero-tag">
+        <span class="hero-dot"></span>
+        Disponible para proyectos
+      </div>
+      <div class="hero-name">Jacson Ander</div>
+      <div class="hero-subtitle">Técnico &amp; Desarrollador</div>
+      <p class="hero-bio">
+        Apasionado por la tecnología y con más de 5 años de experiencia en instalaciones, mantenimiento de equipos y desarrollo de sistemas a medida. Traigo soluciones tecnológicas de cualquier parte del mundo, con soporte personalizado y atención profesional en Paraguay.
+      </p>
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <div class="hero-stat-num" id="stat-clients">120+</div>
+          <div class="hero-stat-label">Clientes Atendidos</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-num" id="stat-exp">5+</div>
+          <div class="hero-stat-label">Años de Experiencia</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-num">15+</div>
+          <div class="hero-stat-label">Proyectos Entregados</div>
+        </div>
+      </div>
+      <div class="hero-actions">
+        <a href="#servicios" class="btn-primary" onclick="Utils.scrollTo('servicios'); return false;">
+          <i class="fas fa-tools"></i> Ver Servicios
+        </a>
+        <a href="https://wa.me/595985656729?text=Hola%20Jacson%2C%20me%20interesa%20tu%20servicio!" target="_blank" class="btn-whatsapp" id="hero-wa-btn">
+          <i class="fab fa-whatsapp"></i> WhatsApp
+        </a>
+      </div>
+      <div class="social-links">
+        <a href="https://facebook.com/jacsonander" target="_blank" class="social-btn fb" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+        <a href="https://instagram.com/jacsonander" target="_blank" class="social-btn ig" title="Instagram"><i class="fab fa-instagram"></i></a>
+        <a href="https://youtube.com/@jacsonander" target="_blank" class="social-btn yt" title="YouTube"><i class="fab fa-youtube"></i></a>
+        <a href="https://tiktok.com/@jacsonander" target="_blank" class="social-btn tk" title="TikTok"><i class="fab fa-tiktok"></i></a>
+        <a href="https://linkedin.com/in/jacsonander" target="_blank" class="social-btn li" title="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+        <a href="https://github.com/jacsonander" target="_blank" class="social-btn gh" title="GitHub"><i class="fab fa-github"></i></a>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRODUCTOS -->
+  <section id="productos">
+    <div class="section-header">
+      <div class="section-title-group">
+        <div class="section-label">Tienda</div>
+        <h2 class="section-title">Productos a Pedido</h2>
+        <p class="section-desc">Importo cualquier producto de cualquier parte del mundo. Precio a consultar vía WhatsApp.</p>
+      </div>
+      <button class="btn-ver-mas" onclick="Render.productsCatalog(); Utils.openModal('modal-catalog')">
+        <i class="fas fa-th"></i> Ver Catálogo Completo
+      </button>
+    </div>
+    <div class="cards-grid cards-grid-4" id="products-grid">
+      <div class="loading-spinner">Cargando productos...</div>
+    </div>
+  </section>
+
+  <!-- SERVICIOS -->
+  <section id="servicios">
+    <div class="section-header">
+      <div class="section-title-group">
+        <div class="section-label">Especialidades</div>
+        <h2 class="section-title">Servicios Especializados</h2>
+        <p class="section-desc">Instalaciones y mantenimiento profesional con garantía de servicio.</p>
+      </div>
+      <button class="btn-ver-mas" onclick="Utils.openModal('modal-servicios')">
+        Ver todos <i class="fas fa-arrow-right"></i>
+      </button>
+    </div>
+    <div class="cards-grid cards-grid-4" id="services-grid">
+      <div class="loading-spinner">Cargando servicios...</div>
+    </div>
+  </section>
+
+  <!-- IPTV -->
+  <section id="iptv">
+    <div class="section-header">
+      <div class="section-title-group">
+        <div class="section-label">Entretenimiento</div>
+        <h2 class="section-title">Planes IPTV</h2>
+        <p class="section-desc">Disfruta de miles de canales, películas y series con calidad HD y 4K.</p>
+      </div>
+    </div>
+    <div class="iptv-grid" id="iptv-grid">
+      <div class="loading-spinner">Cargando planes...</div>
+    </div>
+  </section>
+
+  <!-- HERRAMIENTAS -->
+  <section id="herramientas">
+    <div class="section-header">
+      <div class="section-title-group">
+        <div class="section-label">Recursos</div>
+        <h2 class="section-title">Mis Herramientas</h2>
+        <p class="section-desc">Software, scripts y recursos que preparé. Descarga gratuita.</p>
+      </div>
+      <button class="btn-ver-mas" onclick="Utils.openModal('modal-tools')">
+        Ver todas <i class="fas fa-arrow-right"></i>
+      </button>
+    </div>
+    <div class="cards-grid cards-grid-2" id="tools-grid">
+      <div class="loading-spinner">Cargando herramientas...</div>
+    </div>
+  </section>
+
+  <!-- SOCIAL MEDIA -->
+  <section id="social-media">
+    <div class="section-header">
+      <div class="section-title-group">
+        <div class="section-label">Presencia Digital</div>
+        <h2 class="section-title">Redes Sociales</h2>
+        <p class="section-desc">Sígueme para contenido sobre tecnología, tutoriales y novedades.</p>
+      </div>
+    </div>
+    <div class="cards-grid cards-grid-3" id="social-grid">
+      <div class="loading-spinner">Cargando redes...</div>
+    </div>
+  </section>
+
+  <!-- PROYECTOS -->
+  <section id="proyectos">
+    <div class="section-header">
+      <div class="section-title-group">
+        <div class="section-label">Desarrollo</div>
+        <h2 class="section-title">Proyectos de Sistemas</h2>
+        <p class="section-desc">Sistemas desarrollados a medida para empresas y emprendedores.</p>
+      </div>
+      <button class="btn-ver-mas" onclick="Utils.openModal('modal-proyectos')">
+        Ver todos <i class="fas fa-arrow-right"></i>
+      </button>
+    </div>
+    <div class="cards-grid cards-grid-3" id="projects-grid">
+      <div class="loading-spinner">Cargando proyectos...</div>
+    </div>
+  </section>
+
+  <!-- VIDEOS -->
+  <section id="videos">
+    <div class="section-header">
+      <div class="section-title-group">
+        <div class="section-label">Producción</div>
+        <h2 class="section-title">Edición de Video</h2>
+        <p class="section-desc">Trabajos de edición profesional: reels, corporativos, eventos y más.</p>
+      </div>
+      <button class="btn-ver-mas" onclick="Utils.openModal('modal-videos')">
+        Ver todos <i class="fas fa-arrow-right"></i>
+      </button>
+    </div>
+    <div class="cards-grid cards-grid-3" id="videos-grid">
+      <div class="loading-spinner">Cargando videos...</div>
+    </div>
+  </section>
+
+</main>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">⚡ Ander Instalaciones y Mantenimientos</div>
+  <p>Tecnología profesional al alcance de todos · Paraguay</p>
+  <div class="footer-links">
+    <a href="#" onclick="Utils.scrollTo('about'); return false;">Inicio</a>
+    <a href="#" onclick="Utils.scrollTo('servicios'); return false;">Servicios</a>
+    <a href="#" onclick="Utils.scrollTo('iptv'); return false;">IPTV</a>
+    <a href="#" onclick="Utils.scrollTo('proyectos'); return false;">Proyectos</a>
+    <a href="https://wa.me/595XXXXXXXXX" target="_blank">WhatsApp</a>
+    <a href="#" onclick="Utils.openModal('modal-login'); return false;">Admin</a>
+  </div>
+  <p style="margin-top:16px; font-size:12px;">© 2024 jacsonander.com — Todos los derechos reservados</p>
+</footer>
+
+<!-- ========== MODALS ========== -->
+
+<!-- LOGIN -->
+<div class="modal-overlay" id="modal-login">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title"><i class="fas fa-lock" style="color:var(--accent);margin-right:8px;"></i>Iniciar Sesión</div>
+      <button class="modal-close" onclick="Utils.closeModal('modal-login')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Usuario</label>
+        <input type="text" id="login-user" placeholder="Tu nombre de usuario" autocomplete="username">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Contraseña</label>
+        <input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password">
+      </div>
+      <p id="login-error" style="color:var(--red);font-size:13px;display:none;margin-top:8px;"><i class="fas fa-exclamation-circle"></i> Usuario o contraseña incorrectos.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="Utils.closeModal('modal-login')">Cancelar</button>
+      <button class="btn-submit" onclick="Auth.login()"><i class="fas fa-sign-in-alt"></i> Ingresar</button>
+    </div>
+  </div>
+</div>
+
+<!-- PRODUCT DETAIL -->
+<div class="modal-overlay" id="modal-product-detail">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <div class="modal-title"><i class="fas fa-box-open" style="color:var(--accent);margin-right:8px;"></i>Detalle del Producto</div>
+      <button class="modal-close" onclick="Utils.closeModal('modal-product-detail')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body" id="product-detail-body">
+      <div class="loading-spinner">Cargando producto...</div>
+    </div>
+  </div>
+</div>
+
+<!-- CATALOG -->
+<div class="modal-overlay" id="modal-catalog">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <div class="modal-title"><i class="fas fa-box" style="color:var(--accent);margin-right:8px;"></i>Catálogo de Productos</div>
+      <button class="modal-close" onclick="Utils.closeModal('modal-catalog')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <p style="color:var(--text2);margin-bottom:20px;font-size:14px;">Traigo cualquier producto a pedido. ¡Consultá por WhatsApp!</p>
+      <div class="cards-grid cards-grid-3" id="catalog-grid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- SERVICIOS MODAL -->
+<div class="modal-overlay" id="modal-servicios">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <div class="modal-title"><i class="fas fa-tools" style="color:var(--accent);margin-right:8px;"></i>Todos los Servicios</div>
+      <button class="modal-close" onclick="Utils.closeModal('modal-servicios')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body"><div class="cards-grid cards-grid-2" id="services-modal-grid"></div></div>
+  </div>
+</div>
+
+<!-- HERRAMIENTAS MODAL -->
+<div class="modal-overlay" id="modal-tools">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <div class="modal-title"><i class="fas fa-download" style="color:var(--orange);margin-right:8px;"></i>Todas las Herramientas</div>
+      <button class="modal-close" onclick="Utils.closeModal('modal-tools')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body"><div class="cards-grid cards-grid-2" id="tools-modal-grid"></div></div>
+  </div>
+</div>
+
+<!-- PROYECTOS MODAL -->
+<div class="modal-overlay" id="modal-proyectos">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <div class="modal-title"><i class="fas fa-code" style="color:var(--accent);margin-right:8px;"></i>Proyectos de Sistemas</div>
+      <button class="modal-close" onclick="Utils.closeModal('modal-proyectos')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body"><div class="cards-grid cards-grid-2" id="projects-modal-grid"></div></div>
+  </div>
+</div>
+
+<!-- VIDEOS MODAL -->
+<div class="modal-overlay" id="modal-videos">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <div class="modal-title"><i class="fas fa-video" style="color:var(--red);margin-right:8px;"></i>Trabajos de Edición</div>
+      <button class="modal-close" onclick="Utils.closeModal('modal-videos')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body"><div class="cards-grid cards-grid-3" id="videos-modal-grid"></div></div>
+  </div>
+</div>
+
+<!-- MIS PEDIDOS MODAL -->
+<div class="modal-overlay" id="modal-my-orders">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <div class="modal-title"><i class="fas fa-receipt" style="color:var(--accent3);margin-right:8px;"></i>Mis Pedidos y Trabajos</div>
+      <button class="modal-close" onclick="Utils.closeModal('modal-my-orders')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <p style="color:var(--text2);font-size:14px;margin-bottom:16px;">Historial de tus trabajos y pedidos registrados:</p>
+      <div id="my-orders-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN FORM MODAL -->
+<div class="modal-overlay" id="modal-admin-form">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="admin-form-title">Agregar</div>
+      <button class="modal-close" onclick="Utils.closeModal('modal-admin-form')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body" id="admin-form-body"></div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="Utils.closeModal('modal-admin-form')">Cancelar</button>
+      <button class="btn-submit" onclick="Admin.saveForm()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== ADMIN PANEL ========== -->
+<div id="admin-panel">
+  <div class="admin-sidebar">
+    <div class="admin-sidebar-head">
+      <h2>⚡ Panel Admin</h2>
+      <span>Ander Instalaciones</span>
+    </div>
+    <nav class="admin-nav">
+      <div class="admin-nav-section">General</div>
+      <div class="admin-nav-item active" onclick="Admin.showSection('dash', this)"><i class="fas fa-tachometer-alt"></i> Dashboard</div>
+      <div class="admin-nav-item" onclick="Admin.showSection('clientes', this)"><i class="fas fa-users"></i> Clientes</div>
+      <div class="admin-nav-item" onclick="Admin.showSection('pagos', this)"><i class="fas fa-coins"></i> Pagos &amp; Ganancias</div>
+      <div class="admin-nav-section">Contenido</div>
+      <div class="admin-nav-item" onclick="Admin.showSection('admin-productos', this)"><i class="fas fa-box"></i> Productos</div>
+      <div class="admin-nav-item" onclick="Admin.showSection('admin-servicios', this)"><i class="fas fa-tools"></i> Servicios</div>
+      <div class="admin-nav-item" onclick="Admin.showSection('admin-iptv', this)"><i class="fas fa-tv"></i> IPTV</div>
+      <div class="admin-nav-item" onclick="Admin.showSection('admin-tools', this)"><i class="fas fa-download"></i> Herramientas</div>
+      <div class="admin-nav-item" onclick="Admin.showSection('admin-proyectos', this)"><i class="fas fa-code"></i> Proyectos</div>
+      <div class="admin-nav-item" onclick="Admin.showSection('admin-videos', this)"><i class="fas fa-video"></i> Videos</div>
+      <div class="admin-nav-section">Sistema</div>
+      <div class="admin-nav-item" onclick="Admin.showSection('config', this); Admin.loadConfig()"><i class="fas fa-cog"></i> Configuración</div>
+    </nav>
+  </div>
+  <div class="admin-main">
+    <div class="admin-topbar">
+      <h3 id="admin-topbar-title">Dashboard</h3>
+      <div class="admin-topbar-actions">
+        <span style="font-size:13px;color:var(--text2);">Admin: <strong style="color:var(--accent);">jacsonander</strong></span>
+        <button class="btn-close-admin" onclick="Admin.close()"><i class="fas fa-times"></i> Cerrar Panel</button>
+      </div>
+    </div>
+    <div class="admin-content">
+
+      <!-- DASHBOARD -->
+      <div class="admin-section show" id="dash-section">
+        <div class="dash-welcome">
+          <div class="dash-welcome-text">
+            <h2>¡Bienvenido, Jacson! 👋</h2>
+            <p id="admin-date-display">Hoy es un gran día para crecer tu negocio.</p>
+          </div>
+          <div class="dash-welcome-icon">⚡</div>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-card-label">Ganancias Totales</div>
+            <div class="stat-card-value" id="dash-total-gs" style="color:var(--accent3);">₲ 0</div>
+            <div class="stat-card-change change-up"><i class="fas fa-arrow-up"></i> Total acumulado</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-label">Clientes Registrados</div>
+            <div class="stat-card-value" id="dash-clients-count" style="color:var(--accent);">0</div>
+            <div class="stat-card-change"><i class="fas fa-users"></i> Total</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-label">Servicios Realizados</div>
+            <div class="stat-card-value" id="dash-services-count" style="color:var(--orange);">0</div>
+            <div class="stat-card-change"><i class="fas fa-check-circle"></i> Registros</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-label">Productos en Catálogo</div>
+            <div class="stat-card-value" id="dash-products-count" style="color:var(--gold);">0</div>
+            <div class="stat-card-change"><i class="fas fa-box"></i> Activos</div>
+          </div>
+        </div>
+        <div class="admin-two-col">
+          <div class="admin-panel-card">
+            <h4><i class="fas fa-chart-bar"></i> Ganancias por Mes (₲)</h4>
+            <div class="chart-bar-container" id="bar-chart"></div>
+          </div>
+          <div class="admin-panel-card">
+            <h4><i class="fas fa-history"></i> Últimos Pagos</h4>
+            <table class="admin-table">
+              <thead><tr><th>Cliente</th><th>Concepto</th><th>Monto</th><th>Estado</th></tr></thead>
+              <tbody id="dash-payments-tbody"><tr><td colspan="4" style="text-align:center;color:var(--text3);">Sin registros</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- CLIENTES -->
+      <div class="admin-section" id="clientes-section">
+        <div class="admin-section-header">
+          <div class="admin-section-title">Gestión de Clientes</div>
+          <button class="btn-add" onclick="Admin.openForm('client')"><i class="fas fa-plus"></i> Nuevo Cliente</button>
+        </div>
+        <div class="admin-panel-card" style="margin-bottom:20px;">
+          <input type="text" placeholder="🔍 Buscar cliente..." id="client-search" oninput="Admin.filterClients()" style="margin-bottom:16px;">
+          <div style="overflow-x:auto;">
+            <table class="admin-table" id="clients-table">
+              <thead><tr><th>Nombre</th><th>Teléfono</th><th>Email</th><th>Ciudad</th><th>Tipo</th><th>Registrado</th><th>Acc.</th></tr></thead>
+              <tbody id="clients-tbody"><tr><td colspan="7" style="text-align:center;color:var(--text3);">Sin clientes</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- PAGOS -->
+      <div class="admin-section" id="pagos-section">
+        <div class="admin-section-header">
+          <div class="admin-section-title">Pagos &amp; Ganancias</div>
+          <button class="btn-add" onclick="Admin.openForm('payment')"><i class="fas fa-plus"></i> Registrar Pago</button>
+        </div>
+        <div class="admin-panel-card" style="margin-bottom:20px;text-align:center;">
+          <div style="font-size:13px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:8px;">Total de Ganancias</div>
+          <div class="earnings-total" id="total-earnings-display">₲ 0</div>
+          <div class="earnings-sub" id="total-earnings-usd">≈ USD 0.00</div>
+        </div>
+        <div class="admin-panel-card">
+          <h4><i class="fas fa-list"></i> Historial de Pagos</h4>
+          <div style="overflow-x:auto;">
+            <table class="admin-table">
+              <thead><tr><th>Fecha</th><th>Cliente</th><th>Concepto</th><th>Costo</th><th>Venta</th><th>Ganancia</th><th>Estado</th><th>Acc.</th></tr></thead>
+              <tbody id="payments-tbody"><tr><td colspan="8" style="text-align:center;color:var(--text3);">Sin pagos</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- PRODUCTOS ADMIN -->
+      <div class="admin-section" id="admin-productos-section">
+        <div class="admin-section-header">
+          <div class="admin-section-title">Gestión de Productos</div>
+          <button class="btn-add" onclick="Admin.openForm('product')"><i class="fas fa-plus"></i> Agregar Producto</button>
+        </div>
+        <div class="admin-items-grid" id="admin-products-list"></div>
+      </div>
+
+      <!-- SERVICIOS ADMIN -->
+      <div class="admin-section" id="admin-servicios-section">
+        <div class="admin-section-header">
+          <div class="admin-section-title">Gestión de Servicios</div>
+          <button class="btn-add" onclick="Admin.openForm('service')"><i class="fas fa-plus"></i> Agregar Servicio</button>
+        </div>
+        <div class="admin-items-grid" id="admin-services-list"></div>
+      </div>
+
+      <!-- IPTV ADMIN -->
+      <div class="admin-section" id="admin-iptv-section">
+        <div class="admin-section-header">
+          <div class="admin-section-title">Gestión de IPTV</div>
+          <button class="btn-add" onclick="Admin.openForm('iptv')"><i class="fas fa-plus"></i> Agregar Plan</button>
+        </div>
+        <div class="admin-items-grid" id="admin-iptv-list"></div>
+      </div>
+
+      <!-- TOOLS ADMIN -->
+      <div class="admin-section" id="admin-tools-section">
+        <div class="admin-section-header">
+          <div class="admin-section-title">Gestión de Herramientas</div>
+          <button class="btn-add" onclick="Admin.openForm('tool')"><i class="fas fa-plus"></i> Agregar Herramienta</button>
+        </div>
+        <div class="admin-items-grid" id="admin-tools-list"></div>
+      </div>
+
+      <!-- PROYECTOS ADMIN -->
+      <div class="admin-section" id="admin-proyectos-section">
+        <div class="admin-section-header">
+          <div class="admin-section-title">Gestión de Proyectos</div>
+          <button class="btn-add" onclick="Admin.openForm('project')"><i class="fas fa-plus"></i> Agregar Proyecto</button>
+        </div>
+        <div class="admin-items-grid" id="admin-projects-list"></div>
+      </div>
+
+      <!-- VIDEOS ADMIN -->
+      <div class="admin-section" id="admin-videos-section">
+        <div class="admin-section-header">
+          <div class="admin-section-title">Gestión de Videos</div>
+          <button class="btn-add" onclick="Admin.openForm('video')"><i class="fas fa-plus"></i> Agregar Video</button>
+        </div>
+        <div class="admin-items-grid" id="admin-videos-list"></div>
+      </div>
+
+      <!-- CONFIG -->
+      <div class="admin-section" id="config-section">
+        <div class="admin-section-title" style="margin-bottom:20px;">Configuración del Sistema</div>
+        <div class="admin-two-col">
+          <div class="admin-panel-card">
+            <h4><i class="fas fa-key"></i> Cambiar Contraseña Admin</h4>
+            <div class="form-group"><label class="form-label">Contraseña Actual</label><input type="password" id="cfg-current-pass"></div>
+            <div class="form-group"><label class="form-label">Nueva Contraseña</label><input type="password" id="cfg-new-pass"></div>
+            <div class="form-group"><label class="form-label">Confirmar Nueva</label><input type="password" id="cfg-confirm-pass"></div>
+            <button class="btn-submit" onclick="Auth.changePassword()" style="width:100%;margin-top:8px;"><i class="fas fa-save"></i> Actualizar Contraseña</button>
+          </div>
+          <div class="admin-panel-card">
+            <h4><i class="fas fa-phone"></i> Configuración del Sitio</h4>
+            <div class="form-group"><label class="form-label">Número WhatsApp</label><input type="text" id="cfg-phone" placeholder="+595XXXXXXXXX"></div>
+            <div class="form-group"><label class="form-label">Clientes Atendidos (Estadística)</label><input type="number" id="cfg-clients-stat" placeholder="120"></div>
+            <div class="form-group"><label class="form-label">Años de Experiencia</label><input type="number" id="cfg-exp" placeholder="5"></div>
+            <button class="btn-submit" onclick="Admin.saveConfig()" style="width:100%;margin-top:8px;"><i class="fas fa-save"></i> Guardar Configuración</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ========== SCRIPTS (orden importa) ========== -->
+<script src="/js/api.js"></script>
+<script src="/js/utils.js"></script>
+<script src="/js/auth.js"></script>
+<script src="/js/render.js"></script>
+<script src="/js/admin.js"></script>
+<script src="/js/app.js"></script>
+
+</body>
+</html>

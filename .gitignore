@@ -1,0 +1,8 @@
+node_modules/
+ander.db
+ander.db-shm
+ander.db-wal
+.env
+uploads/
+serviceAccountKey.json
+*.log

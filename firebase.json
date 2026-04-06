@@ -1,0 +1,16 @@
+{
+  "hosting": {
+    "source": ".",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**",
+      "ander.db*",
+      "uploads/**",
+      "serviceAccountKey.json"
+    ],
+    "frameworksBackend": {
+      "region": "us-central1"
+    }
+  }
+}

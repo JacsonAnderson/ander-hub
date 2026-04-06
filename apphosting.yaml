@@ -1,0 +1,17 @@
+# apphosting.yaml - Configuração do Firebase App Hosting
+# Documentação: https://firebase.google.com/docs/app-hosting
+
+runConfig:
+  runtime: nodejs20
+  concurrency: 80
+  cpu: 1
+  memoryMiB: 512
+  minInstances: 0
+  maxInstances: 10
+
+env:
+  - variable: NODE_ENV
+    value: production
+  # As variáveis secretas (JWT_SECRET, FIREBASE_SERVICE_ACCOUNT, etc.)
+  # devem ser configuradas no Firebase Console → App Hosting → Secrets
+  # NÃO coloque valores secretos aqui!
