@@ -232,9 +232,38 @@
   footer .footer-links { gap: 14px; }
 
   /* === ADMIN MOBILE === */
-  .admin-sidebar { display: none; }
+
+  /* Sidebar vira painel deslizante */
+  .admin-sidebar {
+    position: fixed; top: 0; left: 0; bottom: 0;
+    z-index: 600;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    box-shadow: 4px 0 24px rgba(0,0,0,0.5);
+  }
+  .admin-sidebar.open { transform: translateX(0); }
+
+  /* Overlay escuro ao abrir a sidebar */
+  .admin-sidebar-overlay {
+    display: none;
+    position: fixed; inset: 0; z-index: 599;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(2px);
+  }
+  .admin-sidebar-overlay.show { display: block; }
+
+  /* Botão hamburger na topbar */
+  .admin-hamburger {
+    display: flex; align-items: center; justify-content: center;
+    width: 38px; height: 38px; border-radius: 10px;
+    background: rgba(0,200,255,0.1); border: 1px solid var(--border2);
+    color: var(--accent); font-size: 16px; cursor: pointer;
+    flex-shrink: 0;
+  }
+
   .admin-topbar { padding: 0 16px; height: 56px; }
   .admin-topbar h3 { font-size: 15px; }
+  .admin-user-label { display: none; }
   .admin-content { padding: 16px; }
   .stats-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
   .stat-card { padding: 14px; }

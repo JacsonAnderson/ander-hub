@@ -123,6 +123,17 @@ const Admin = {
   close() {
     document.getElementById('admin-panel')?.classList.remove('show');
     document.body.style.overflow = '';
+    this.closeSidebar();
+  },
+
+  openSidebar() {
+    document.getElementById('admin-sidebar-overlay')?.classList.add('show');
+    document.querySelector('.admin-sidebar')?.classList.add('open');
+  },
+
+  closeSidebar() {
+    document.getElementById('admin-sidebar-overlay')?.classList.remove('show');
+    document.querySelector('.admin-sidebar')?.classList.remove('open');
   },
 
   showSection(name, el) {
@@ -139,6 +150,7 @@ const Admin = {
     };
     const topbar = document.getElementById('admin-topbar-title');
     if (topbar) topbar.textContent = titles[name] || name;
+    this.closeSidebar(); // fecha sidebar ao navegar no mobile
   },
 
   // ===== DASHBOARD =====

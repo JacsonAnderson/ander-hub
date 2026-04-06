@@ -392,11 +392,15 @@
       <div class="admin-nav-item" onclick="Admin.showSection('config', this); Admin.loadConfig()"><i class="fas fa-cog"></i> Configuración</div>
     </nav>
   </div>
+  <div class="admin-sidebar-overlay" id="admin-sidebar-overlay" onclick="Admin.closeSidebar()"></div>
   <div class="admin-main">
     <div class="admin-topbar">
-      <h3 id="admin-topbar-title">Dashboard</h3>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="admin-hamburger" id="admin-hamburger" onclick="Admin.openSidebar()"><i class="fas fa-bars"></i></button>
+        <h3 id="admin-topbar-title">Dashboard</h3>
+      </div>
       <div class="admin-topbar-actions">
-        <span style="font-size:13px;color:var(--text2);">Admin: <strong style="color:var(--accent);">jacsonander</strong></span>
+        <span class="admin-user-label" style="font-size:13px;color:var(--text2);">Admin: <strong style="color:var(--accent);">jacsonander</strong></span>
         <button class="btn-close-admin" onclick="Admin.close()"><i class="fas fa-times"></i> Cerrar Panel</button>
       </div>
     </div>
