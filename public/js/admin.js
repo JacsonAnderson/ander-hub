@@ -450,7 +450,7 @@ const Admin = {
       input.value = '';
       Utils.toast('Imagen agregada', 'success');
       // Recargar imágenes
-      document.querySelector('.admin-img-grid')?.parentElement?.parentElement?.remove();
+      document.querySelector('.admin-img-grid')?.parentElement?.remove();
       this.loadProductImages(productId);
       Render.all();
     } catch (err) { Utils.toast('Error al agregar imagen', 'error'); }
@@ -462,7 +462,7 @@ const Admin = {
       Utils.toast('Subiendo imagen...', 'success');
       await API.products.uploadImage(productId, file);
       Utils.toast('Imagen subida', 'success');
-      document.querySelector('.admin-img-grid')?.parentElement?.parentElement?.remove();
+      document.querySelector('.admin-img-grid')?.parentElement?.remove();
       this.loadProductImages(productId);
       Render.all();
     } catch (err) { Utils.toast('Error al subir imagen', 'error'); }
@@ -472,7 +472,7 @@ const Admin = {
     try {
       await API.products.setCover(productId, imageId);
       Utils.toast('Portada actualizada', 'success');
-      document.querySelector('.admin-img-grid')?.parentElement?.parentElement?.remove();
+      document.querySelector('.admin-img-grid')?.parentElement?.remove();
       this.loadProductImages(productId);
       Render.all();
     } catch (err) { Utils.toast('Error', 'error'); }
@@ -483,7 +483,7 @@ const Admin = {
     try {
       await API.products.deleteImage(productId, imageId);
       Utils.toast('Imagen eliminada', 'warning');
-      document.querySelector('.admin-img-grid')?.parentElement?.parentElement?.remove();
+      document.querySelector('.admin-img-grid')?.parentElement?.remove();
       this.loadProductImages(productId);
       Render.all();
     } catch (err) { Utils.toast('Error al eliminar', 'error'); }
