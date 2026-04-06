@@ -8,11 +8,15 @@ function _init() {
   const bucketName = process.env.FIREBASE_STORAGE_BUCKET;
 
   if (process.env.FIREBASE_SERVICE_ACCOUNT) {
-    // Produção: credenciais via variável de ambiente (App Hosting / CI)
+    // Credenciais via variável de ambiente (CI/CD manual)
     admin.initializeApp({
       credential: admin.credential.cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT)),
       storageBucket: bucketName
     });
+  } else if (process.env.K_SERVICE || process.env.GOOGLE_CLOUD_PROJECT) {
+    // Firebase App Hosting / Cloud Run: usa Application Default Credentials automaticamente
+    // Não precisa de serviceAccountKey.json — o Google Cloud provê as credenciais
+    admin.initializeApp({ storageBucket: bucketName });
   } else {
     // Desenvolvimento local: arquivo serviceAccountKey.json na raiz do projeto
     // Baixe em: Firebase Console → Configurações → Contas de serviço → Gerar nova chave privada
