@@ -240,8 +240,8 @@ const Admin = {
           <div class="admin-item-card-meta">${metaFunc(item)}</div>
         </div>
         <div class="admin-item-card-actions">
-          <button class="btn-edit" onclick="Admin.openForm('${singularType}', ${item.id})"><i class="fas fa-edit"></i></button>
-          <button class="btn-del" onclick="Admin.deleteItem('${apiType}', ${item.id})"><i class="fas fa-trash"></i></button>
+          <button class="btn-edit" onclick="Admin.openForm('${singularType}', '${item.id}')"><i class="fas fa-edit"></i></button>
+          <button class="btn-del" onclick="Admin.deleteItem('${apiType}', '${item.id}')"><i class="fas fa-trash"></i></button>
         </div>
       </div>`).join('') : '<p style="color:var(--text3);padding:12px;">Sin elementos.</p>';
     } catch (err) { console.error(`Error loading ${type}:`, err); }
@@ -261,9 +261,9 @@ const Admin = {
         <td><span class="badge badge-blue">${c.type || 'Cliente'}</span></td>
         <td style="font-size:12px;color:var(--text3);">${Utils.formatDate(c.created_at)}</td>
         <td style="white-space:nowrap;">
-          <button class="btn-edit" onclick="Admin.showClientHistory(${c.id})" title="Ver historial" style="margin-right:4px;background:rgba(0,255,153,0.1);color:var(--accent3);"><i class="fas fa-history"></i></button>
-          <button class="btn-edit" onclick="Admin.openForm('client', ${c.id})" style="margin-right:4px;"><i class="fas fa-edit"></i></button>
-          <button class="btn-del" onclick="Admin.deleteClient(${c.id})"><i class="fas fa-trash"></i></button>
+          <button class="btn-edit" onclick="Admin.showClientHistory('${c.id}')" title="Ver historial" style="margin-right:4px;background:rgba(0,255,153,0.1);color:var(--accent3);"><i class="fas fa-history"></i></button>
+          <button class="btn-edit" onclick="Admin.openForm('client', '${c.id}')" style="margin-right:4px;"><i class="fas fa-edit"></i></button>
+          <button class="btn-del" onclick="Admin.deleteClient('${c.id}')"><i class="fas fa-trash"></i></button>
         </td>
       </tr>`).join('') : '<tr><td colspan="7" style="text-align:center;color:var(--text3);">Sin clientes</td></tr>';
     } catch (err) { console.error('Error loading clients:', err); }
@@ -306,8 +306,8 @@ const Admin = {
           <td style="color:var(--accent3);font-weight:700;">₲ ${Utils.formatGs(profit)}</td>
           <td><span class="badge badge-${p.status === 'Pagado' ? 'green' : p.status === 'Cancelado' ? 'red' : 'orange'}">${p.status}</span></td>
           <td style="white-space:nowrap;">
-            <button class="btn-edit" onclick="Admin.openForm('payment', ${p.id})" style="margin-right:4px;" title="Editar / Agregar fotos"><i class="fas fa-edit"></i></button>
-            <button class="btn-del" onclick="Admin.deletePayment(${p.id})" title="Eliminar"><i class="fas fa-trash"></i></button>
+            <button class="btn-edit" onclick="Admin.openForm('payment', '${p.id}')" style="margin-right:4px;" title="Editar / Agregar fotos"><i class="fas fa-edit"></i></button>
+            <button class="btn-del" onclick="Admin.deletePayment('${p.id}')" title="Eliminar"><i class="fas fa-trash"></i></button>
           </td>
         </tr>`;
       }).join('') : '<tr><td colspan="8" style="text-align:center;color:var(--text3);">Sin pagos</td></tr>';
@@ -419,8 +419,8 @@ const Admin = {
                 ${img.is_cover ? '<div class="img-cover-badge">PORTADA</div>' : ''}
                 <img src="${img.url}" alt="" loading="lazy">
                 <div class="img-actions">
-                  ${!img.is_cover ? `<button class="btn-edit" style="width:24px;height:24px;font-size:10px;" onclick="Admin.setImageCover(${productId}, ${img.id})" title="Marcar como portada"><i class="fas fa-star"></i></button>` : ''}
-                  <button class="btn-del" style="width:24px;height:24px;font-size:10px;" onclick="Admin.deleteProductImage(${productId}, ${img.id})" title="Eliminar"><i class="fas fa-trash"></i></button>
+                  ${!img.is_cover ? `<button class="btn-edit" style="width:24px;height:24px;font-size:10px;" onclick="Admin.setImageCover('${productId}', '${img.id}')" title="Marcar como portada"><i class="fas fa-star"></i></button>` : ''}
+                  <button class="btn-del" style="width:24px;height:24px;font-size:10px;" onclick="Admin.deleteProductImage('${productId}', '${img.id}')" title="Eliminar"><i class="fas fa-trash"></i></button>
                 </div>
               </div>
             `).join('') : '<p style="color:var(--text3); font-size:12px;">Sin imágenes aún.</p>'}
@@ -429,12 +429,12 @@ const Admin = {
             <div style="flex:1; min-width:200px;">
               <input type="text" id="img-url-input" placeholder="Pegar URL de imagen..." style="font-size:12px;">
             </div>
-            <button class="btn-add" style="font-size:12px; padding:8px 14px;" onclick="Admin.addProductImageUrl(${productId})">
+            <button class="btn-add" style="font-size:12px; padding:8px 14px;" onclick="Admin.addProductImageUrl('${productId}')">
               <i class="fas fa-link"></i> Agregar URL
             </button>
             <label class="btn-add" style="font-size:12px; padding:8px 14px; cursor:pointer;">
               <i class="fas fa-upload"></i> Subir Archivo
-              <input type="file" accept="image/*" style="display:none;" onchange="Admin.uploadProductImage(${productId}, this.files[0])">
+              <input type="file" accept="image/*" style="display:none;" onchange="Admin.uploadProductImage('${productId}', this.files[0])">
             </label>
           </div>
         </div>
@@ -508,7 +508,7 @@ const Admin = {
                   ? `<video src="${m.url}" style="width:100%;height:100%;object-fit:cover;" muted></video>`
                   : `<img src="${m.url}" alt="" loading="lazy">`}
                 <div class="img-actions">
-                  <button class="btn-del" style="width:24px;height:24px;font-size:10px;" onclick="Admin.deletePaymentMedia(${paymentId}, ${m.id})" title="Eliminar"><i class="fas fa-trash"></i></button>
+                  <button class="btn-del" style="width:24px;height:24px;font-size:10px;" onclick="Admin.deletePaymentMedia('${paymentId}', '${m.id}')" title="Eliminar"><i class="fas fa-trash"></i></button>
                 </div>
               </div>
             `).join('') : '<p style="color:var(--text3); font-size:12px;">Sin fotos/videos aún.</p>'}
@@ -521,12 +521,12 @@ const Admin = {
               <option value="image">Imagen</option>
               <option value="video">Video</option>
             </select>
-            <button class="btn-add" style="font-size:12px; padding:8px 14px;" onclick="Admin.addPaymentMediaUrl(${paymentId})">
+            <button class="btn-add" style="font-size:12px; padding:8px 14px;" onclick="Admin.addPaymentMediaUrl('${paymentId}')">
               <i class="fas fa-link"></i> Agregar URL
             </button>
             <label class="btn-add" style="font-size:12px; padding:8px 14px; cursor:pointer;">
               <i class="fas fa-upload"></i> Subir Archivo
-              <input type="file" accept="image/*,video/*" style="display:none;" onchange="Admin.uploadPaymentMedia(${paymentId}, this.files[0])">
+              <input type="file" accept="image/*,video/*" style="display:none;" onchange="Admin.uploadPaymentMedia('${paymentId}', this.files[0])">
             </label>
           </div>
           <p style="font-size:11px; color:var(--text3); margin-top:8px;"><i class="fas fa-info-circle"></i> El cliente podrá ver estas fotos/videos en su panel "Mis Pedidos".</p>
