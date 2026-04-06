@@ -20,9 +20,10 @@ const Render = {
 
   _productCard(prod) {
     const wa = Utils.getWhatsAppLink(`Hola Jacson, me interesa el producto: ${prod.name}`);
-    const hasImage = prod.cover_image && prod.cover_image !== '';
+    const imgSrc = prod.cover_image || prod.image_url || '';
+    const hasImage = imgSrc !== '';
     const imgHtml = hasImage
-      ? `<img src="${prod.cover_image}" alt="${prod.name}" class="prod-img" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="prod-img" style="display:none">${prod.emoji || '📦'}</div>`
+      ? `<img src="${imgSrc}" alt="${prod.name}" class="prod-img" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="prod-img" style="display:none">${prod.emoji || '📦'}</div>`
       : `<div class="prod-img">${prod.emoji || '📦'}</div>`;
     return `<div class="card product-card" onclick="Render.openProductDetail('${prod.id}')" style="cursor:pointer;">
       ${imgHtml}

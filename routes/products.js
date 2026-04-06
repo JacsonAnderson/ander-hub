@@ -202,18 +202,19 @@ router.post('/:id/images/upload', authenticate, adminOnly, upload.single('image'
   try {
     const db = getDb();
     if (!req.file) return res.status(400).json({ error: 'No se proporcionó imagen' });
-    // Contar imagens existentes para decidir se é capa
     const existing = await db.collection('products').doc(req.params.id).collection('images').get();
     const count = existing.size;
+    const isCover = count === 0;
     const imageUrl = await uploadToStorage(req.file.buffer, req.file.originalname, req.file.mimetype, 'products');
     const ref = await db.collection('products').doc(req.params.id).collection('images').add({
-      product_id: req.params.id,
-      image_url: imageUrl,
-      caption: req.body.caption || '',
-      sort_order: count,
-      is_cover: count === 0, // primeira imagem vira capa
-      created_at: new Date().toISOString()
+      product_id: req.params.id, image_url: imageUrl,
+      caption: req.body.caption || '', sort_order: count,
+      is_cover: isCover, created_at: new Date().toISOString()
     });
+    // Atualiza cover_image no produto para aparecer no card da listagem
+    if (isCover) {
+      await db.collection('products').doc(req.params.id).update({ cover_image: imageUrl });
+    }
     const img = docToObj(await ref.get());
     res.status(201).json({ ...img, url: img.image_url });
   } catch (err) {
@@ -229,14 +230,16 @@ router.post('/:id/images/url', authenticate, adminOnly, async (req, res) => {
     if (!image_url) return res.status(400).json({ error: 'URL requerida' });
     const existing = await db.collection('products').doc(req.params.id).collection('images').get();
     const count = existing.size;
+    const isCover = count === 0;
     const ref = await db.collection('products').doc(req.params.id).collection('images').add({
-      product_id: req.params.id,
-      image_url,
-      caption: caption || '',
-      sort_order: count,
-      is_cover: count === 0,
-      created_at: new Date().toISOString()
+      product_id: req.params.id, image_url,
+      caption: caption || '', sort_order: count,
+      is_cover: isCover, created_at: new Date().toISOString()
     });
+    // Atualiza cover_image no produto para aparecer no card da listagem
+    if (isCover) {
+      await db.collection('products').doc(req.params.id).update({ cover_image: image_url });
+    }
     const img = docToObj(await ref.get());
     res.status(201).json({ ...img, url: img.image_url });
   } catch (err) {
@@ -250,12 +253,18 @@ router.put('/:pid/images/:iid/cover', authenticate, adminOnly, async (req, res) 
     const db = getDb();
     const imgsRef = db.collection('products').doc(req.params.pid).collection('images');
     const snap = await imgsRef.get();
-    // Batch: quita is_cover de todas, pone en la seleccionada
     const batch = db.batch();
+    let newCoverUrl = '';
     snap.docs.forEach(doc => {
-      batch.update(doc.ref, { is_cover: doc.id === req.params.iid });
+      const isCover = doc.id === req.params.iid;
+      batch.update(doc.ref, { is_cover: isCover });
+      if (isCover) newCoverUrl = doc.data().image_url;
     });
     await batch.commit();
+    // Atualiza cover_image no produto
+    if (newCoverUrl) {
+      await db.collection('products').doc(req.params.pid).update({ cover_image: newCoverUrl });
+    }
     res.json({ message: 'Portada actualizada' });
   } catch (err) {
     res.status(500).json({ error: 'Error al actualizar portada' });
