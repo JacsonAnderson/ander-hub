@@ -5,8 +5,48 @@
 
 const express = require('express');
 const router = express.Router();
+const bcrypt = require('bcryptjs');
 const { getDb, FieldValue, docToObj, snapToArr } = require('../database/firestore');
 const { authenticate, adminOnly } = require('../middleware/auth');
+
+// ── Gera credenciais automáticas para o cliente no sistema principal ──────────
+async function createMainClient(db, { client_name, client_phone, registered_at }) {
+  // Sequential ID via Firestore transaction
+  const counterRef = db.doc('counters/iptv_clients');
+  let seqId;
+  await db.runTransaction(async t => {
+    const snap = await t.get(counterRef);
+    seqId = ((snap.exists ? snap.data().count : 0) || 0) + 1;
+    t.set(counterRef, { count: seqId }, { merge: true });
+  });
+
+  const paddedId = String(seqId).padStart(3, '0');
+  const firstName = (client_name.split(' ')[0] || 'cliente')
+    .toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]/g, '');
+
+  const d = new Date(registered_at);
+  const ddmmyyyy = String(d.getDate()).padStart(2,'0') + String(d.getMonth()+1).padStart(2,'0') + d.getFullYear();
+
+  const username  = `${firstName}${paddedId}@tv.com`;
+  const plainPass = `${paddedId}${ddmmyyyy}`;
+  const hash      = bcrypt.hashSync(plainPass, 10);
+
+  const userRef = await db.collection('users').add({
+    name:       client_name,
+    username,
+    password:   hash,
+    role:       'client',
+    phone:      client_phone || '',
+    email:      username,
+    seq_id:     seqId,
+    created_at: registered_at,
+    updated_at: registered_at
+  });
+
+  return { userId: userRef.id, username, password_plain: plainPass, seq_id: seqId };
+}
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -170,6 +210,21 @@ router.post('/subscriptions', authenticate, resellerOnly, async (req, res) => {
       updated_at: now
     };
 
+    // Create client in main users collection + generate credentials
+    let credentials = null;
+    try {
+      credentials = await createMainClient(db, {
+        client_name: data.client_name,
+        client_phone: data.client_phone,
+        registered_at: now
+      });
+      data.client_user_id  = credentials.userId;
+      data.client_username = credentials.username;
+      data.client_seq_id   = credentials.seq_id;
+    } catch (credErr) {
+      console.error('Aviso: falha ao criar usuário principal para cliente IPTV:', credErr.message);
+    }
+
     const ref = await db.collection('iptv_subs').add(data);
     const created = docToObj(await ref.get());
 
@@ -179,11 +234,13 @@ router.post('/subscriptions', authenticate, resellerOnly, async (req, res) => {
       amount: parseFloat(price) || 0,
       paid_at: now,
       next_payment: next_payment || '',
-      notes: 'Cadastro inicial',
+      notes: 'Registro inicial',
       created_by: req.user.id
     });
 
-    res.status(201).json(isAdmin(req) ? created : sanitizeForReseller(created));
+    const response = isAdmin(req) ? created : sanitizeForReseller(created);
+    if (credentials) response.generated_credentials = credentials;
+    res.status(201).json(response);
   } catch (err) {
     res.status(500).json({ error: 'Erro ao criar assinatura', details: err.message });
   }
@@ -208,9 +265,13 @@ router.put('/subscriptions/:id', authenticate, resellerOnly, async (req, res) =>
 
     // Admin-only fields
     if (isAdmin(req)) {
-      ['port', 'provider', 'reseller_id', 'reseller_name'].forEach(f => {
+      ['provider', 'reseller_id', 'reseller_name'].forEach(f => {
         if (req.body[f] !== undefined) updates[f] = req.body[f];
       });
+      // Parse port as integer to avoid type mismatch in queries
+      if (req.body.port !== undefined) {
+        updates.port = req.body.port ? parseInt(req.body.port) : null;
+      }
       // If account_id changed, re-fetch credentials
       if (req.body.account_id !== undefined) {
         updates.account_id = req.body.account_id;

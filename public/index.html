@@ -389,10 +389,10 @@
       <div class="admin-nav-item" onclick="Admin.showSection('admin-tools', this)"><i class="fas fa-download"></i> Herramientas</div>
       <div class="admin-nav-item" onclick="Admin.showSection('admin-proyectos', this)"><i class="fas fa-code"></i> Proyectos</div>
       <div class="admin-nav-item" onclick="Admin.showSection('admin-videos', this)"><i class="fas fa-video"></i> Videos</div>
-      <div class="admin-nav-section">Gestão IPTV</div>
+      <div class="admin-nav-section">Gestión IPTV</div>
       <div class="admin-nav-item" data-iptvm-section="admin-iptvm-dashboard" onclick="IPTVM.showSection('admin-iptvm-dashboard')"><i class="fas fa-satellite-dish"></i> Dashboard IPTV</div>
-      <div class="admin-nav-item" data-iptvm-section="admin-iptvm-subscriptions" onclick="IPTVM.showSection('admin-iptvm-subscriptions')"><i class="fas fa-id-card"></i> Assinaturas</div>
-      <div class="admin-nav-item" data-iptvm-section="admin-iptvm-accounts" onclick="IPTVM.showSection('admin-iptvm-accounts')"><i class="fas fa-server"></i> Contas Provedor</div>
+      <div class="admin-nav-item" data-iptvm-section="admin-iptvm-subscriptions" onclick="IPTVM.showSection('admin-iptvm-subscriptions')"><i class="fas fa-id-card"></i> Suscripciones</div>
+      <div class="admin-nav-item" data-iptvm-section="admin-iptvm-accounts" onclick="IPTVM.showSection('admin-iptvm-accounts')"><i class="fas fa-server"></i> Cuentas Proveedor</div>
       <div class="admin-nav-item" data-iptvm-section="admin-iptvm-resellers" onclick="IPTVM.showSection('admin-iptvm-resellers')"><i class="fas fa-user-tie"></i> Revendedores</div>
       <div class="admin-nav-section">Sistema</div>
       <div class="admin-nav-item" onclick="Admin.showSection('config', this); Admin.loadConfig()"><i class="fas fa-cog"></i> Configuración</div>
@@ -578,6 +578,7 @@
           <div class="admin-section-title">Dashboard IPTV</div>
           <button class="btn-add" onclick="IPTVM.showSection('admin-iptvm-subscriptions')"><i class="fas fa-list"></i> Ver Todas</button>
         </div>
+        <div id="admin-iptvm-dashboard-placeholder" style="display:none"></div>
         <div id="admin-iptvm-dashboard">
           <div class="iptvm-empty"><i class="fas fa-spinner fa-spin"></i><p>Carregando...</p></div>
         </div>
@@ -586,23 +587,23 @@
       <!-- IPTVM SUBSCRIPTIONS (admin) -->
       <div class="admin-section" id="admin-iptvm-subscriptions-section">
         <div class="admin-section-header">
-          <div class="admin-section-title">Assinaturas IPTV</div>
-          <button class="btn-add" onclick="IPTVM.openSubForm()"><i class="fas fa-plus"></i> Nova Assinatura</button>
+          <div class="admin-section-title">Suscripciones IPTV</div>
+          <button class="btn-add" onclick="IPTVM.openSubForm()"><i class="fas fa-plus"></i> Nueva Suscripción</button>
         </div>
         <div class="iptvm-filters">
           <select class="iptvm-filter-select" id="admin-iptvm-filter-status" onchange="IPTVM.applyFilters()">
-            <option value="">Todos os status</option>
-            <option value="paid">Pagos</option>
+            <option value="">Todos los estados</option>
+            <option value="paid">Pagados</option>
             <option value="overdue">Vencidos</option>
-            <option value="due_soon">Vence em breve</option>
-            <option value="pending">Pendentes</option>
+            <option value="due_soon">Próximos a vencer</option>
+            <option value="pending">Pendientes</option>
           </select>
           <select class="iptvm-filter-select" id="admin-iptvm-filter-provider" onchange="IPTVM.applyFilters()">
-            <option value="">Todos os provedores</option>
+            <option value="">Todos los proveedores</option>
             <option value="lumix">Lumix TV</option>
             <option value="stlive">STlive</option>
           </select>
-          <input type="text" class="iptvm-search-input" id="admin-iptvm-filter-search" placeholder="Buscar cliente, telefone, dispositivo..." oninput="IPTVM.applyFilters()">
+          <input type="text" class="iptvm-search-input" id="admin-iptvm-filter-search" placeholder="Buscar cliente, teléfono, dispositivo..." oninput="IPTVM.applyFilters()">
         </div>
         <div id="admin-iptvm-subs-list">
           <div class="iptvm-empty"><i class="fas fa-spinner fa-spin"></i><p>Carregando...</p></div>
@@ -612,8 +613,8 @@
       <!-- IPTVM ACCOUNTS (admin) -->
       <div class="admin-section" id="admin-iptvm-accounts-section">
         <div class="admin-section-header">
-          <div class="admin-section-title">Contas de Provedor</div>
-          <button class="btn-add" onclick="IPTVM.openAccountForm()"><i class="fas fa-plus"></i> Nova Conta</button>
+          <div class="admin-section-title">Cuentas de Proveedor</div>
+          <button class="btn-add" onclick="IPTVM.openAccountForm()"><i class="fas fa-plus"></i> Nueva Cuenta</button>
         </div>
         <div id="admin-iptvm-accounts-list">
           <div class="iptvm-empty"><i class="fas fa-spinner fa-spin"></i><p>Carregando...</p></div>
@@ -624,7 +625,7 @@
       <div class="admin-section" id="admin-iptvm-resellers-section">
         <div class="admin-section-header">
           <div class="admin-section-title">Revendedores</div>
-          <button class="btn-add" onclick="IPTVM.openResellerForm()"><i class="fas fa-plus"></i> Novo Revendedor</button>
+          <button class="btn-add" onclick="IPTVM.openResellerForm()"><i class="fas fa-plus"></i> Nuevo Revendedor</button>
         </div>
         <div id="admin-iptvm-resellers-list">
           <div class="iptvm-empty"><i class="fas fa-spinner fa-spin"></i><p>Carregando...</p></div>
@@ -640,7 +641,7 @@
   <div class="iptvm-sidebar-overlay" id="iptvm-sidebar-overlay" onclick="IPTVM.closeSidebar()"></div>
   <div class="iptvm-sidebar">
     <div class="iptvm-sidebar-head">
-      <h2>Painel Revendedor</h2>
+      <h2>Panel Revendedor</h2>
       <span id="reseller-panel-username"></span>
     </div>
     <nav class="iptvm-nav">
@@ -648,7 +649,7 @@
         <i class="fas fa-tachometer-alt"></i> Dashboard
       </div>
       <div class="iptvm-nav-item" data-iptvm-section="iptvm-subscriptions" onclick="IPTVM.showSection('iptvm-subscriptions')">
-        <i class="fas fa-id-card"></i> Minhas Assinaturas
+        <i class="fas fa-id-card"></i> Mis Suscripciones
       </div>
     </nav>
     <div style="padding:16px;border-top:1px solid var(--border2);margin-top:auto;">
@@ -680,22 +681,22 @@
       <!-- Reseller Subscriptions -->
       <div class="iptvm-section" id="iptvm-subscriptions">
         <div class="iptvm-section-header">
-          <div class="iptvm-section-title">Minhas Assinaturas</div>
-          <button class="btn-add" onclick="IPTVM.openSubForm()"><i class="fas fa-plus"></i> Nova Assinatura</button>
+          <div class="iptvm-section-title">Mis Suscripciones</div>
+          <button class="btn-add" onclick="IPTVM.openSubForm()"><i class="fas fa-plus"></i> Nueva Suscripción</button>
         </div>
         <div class="iptvm-filters">
           <select class="iptvm-filter-select" id="iptvm-filter-status" onchange="IPTVM.applyFilters()">
-            <option value="">Todos os status</option>
-            <option value="paid">Pagos</option>
+            <option value="">Todos los estados</option>
+            <option value="paid">Pagados</option>
             <option value="overdue">Vencidos</option>
-            <option value="due_soon">Vence em breve</option>
+            <option value="due_soon">Próximos a vencer</option>
           </select>
           <select class="iptvm-filter-select" id="iptvm-filter-provider" onchange="IPTVM.applyFilters()">
-            <option value="">Todos os provedores</option>
+            <option value="">Todos los proveedores</option>
             <option value="lumix">Lumix TV</option>
             <option value="stlive">STlive</option>
           </select>
-          <input type="text" class="iptvm-search-input" id="iptvm-filter-search" placeholder="Buscar cliente, telefone..." oninput="IPTVM.applyFilters()">
+          <input type="text" class="iptvm-search-input" id="iptvm-filter-search" placeholder="Buscar cliente, teléfono..." oninput="IPTVM.applyFilters()">
         </div>
         <div id="iptvm-subs-list">
           <div class="iptvm-empty"><i class="fas fa-spinner fa-spin"></i><p>Carregando...</p></div>
@@ -718,7 +719,7 @@
     <div class="modal-body" id="modal-iptvm-sub-body"></div>
     <div class="modal-footer">
       <button class="btn-cancel" onclick="Utils.closeModal('modal-iptvm-sub-form')">Cancelar</button>
-      <button class="btn-submit" onclick="IPTVM.saveSub()"><i class="fas fa-save"></i> Salvar</button>
+      <button class="btn-submit" onclick="IPTVM.saveSub()"><i class="fas fa-save"></i> Guardar</button>
     </div>
   </div>
 </div>
@@ -727,14 +728,14 @@
 <div class="modal-overlay" id="modal-iptvm-sub-detail">
   <div class="modal modal-lg">
     <div class="modal-header">
-      <div class="modal-title"><i class="fas fa-id-card" style="color:var(--accent3);margin-right:8px;"></i>Detalhes da Assinatura</div>
+      <div class="modal-title"><i class="fas fa-id-card" style="color:var(--accent3);margin-right:8px;"></i>Detalles de la Suscripción</div>
       <button class="modal-close" onclick="Utils.closeModal('modal-iptvm-sub-detail')"><i class="fas fa-times"></i></button>
     </div>
     <div class="modal-body" id="modal-iptvm-sub-detail-body">
       <div class="iptvm-empty"><i class="fas fa-spinner fa-spin"></i><p>Carregando...</p></div>
     </div>
     <div class="modal-footer">
-      <button class="btn-cancel" onclick="Utils.closeModal('modal-iptvm-sub-detail')">Fechar</button>
+      <button class="btn-cancel" onclick="Utils.closeModal('modal-iptvm-sub-detail')">Cerrar</button>
     </div>
   </div>
 </div>
@@ -743,13 +744,13 @@
 <div class="modal-overlay" id="modal-iptvm-pay">
   <div class="modal">
     <div class="modal-header">
-      <div class="modal-title"><i class="fas fa-dollar-sign" style="color:var(--accent3);margin-right:8px;"></i>Registrar Pagamento</div>
+      <div class="modal-title"><i class="fas fa-dollar-sign" style="color:var(--accent3);margin-right:8px;"></i>Registrar Pago</div>
       <button class="modal-close" onclick="Utils.closeModal('modal-iptvm-pay')"><i class="fas fa-times"></i></button>
     </div>
     <div class="modal-body" id="modal-iptvm-pay-body"></div>
     <div class="modal-footer">
       <button class="btn-cancel" onclick="Utils.closeModal('modal-iptvm-pay')">Cancelar</button>
-      <button class="btn-submit" onclick="IPTVM.confirmPay()"><i class="fas fa-check"></i> Confirmar Pagamento</button>
+      <button class="btn-submit" onclick="IPTVM.confirmPay()"><i class="fas fa-check"></i> Confirmar Pago</button>
     </div>
   </div>
 </div>
@@ -758,14 +759,14 @@
 <div class="modal-overlay" id="modal-iptvm-account-detail">
   <div class="modal modal-lg">
     <div class="modal-header">
-      <div class="modal-title"><i class="fas fa-server" style="color:var(--accent);margin-right:8px;"></i>Conta de Provedor</div>
+      <div class="modal-title"><i class="fas fa-server" style="color:var(--accent);margin-right:8px;"></i>Cuenta de Proveedor</div>
       <button class="modal-close" onclick="Utils.closeModal('modal-iptvm-account-detail')"><i class="fas fa-times"></i></button>
     </div>
     <div class="modal-body" id="modal-iptvm-account-detail-body">
       <div class="iptvm-empty"><i class="fas fa-spinner fa-spin"></i><p>Carregando...</p></div>
     </div>
     <div class="modal-footer">
-      <button class="btn-cancel" onclick="Utils.closeModal('modal-iptvm-account-detail')">Fechar</button>
+      <button class="btn-cancel" onclick="Utils.closeModal('modal-iptvm-account-detail')">Cerrar</button>
     </div>
   </div>
 </div>
@@ -781,7 +782,7 @@
       <div class="iptvm-empty"><i class="fas fa-spinner fa-spin"></i><p>Carregando...</p></div>
     </div>
     <div class="modal-footer">
-      <button class="btn-cancel" onclick="Utils.closeModal('modal-iptvm-reseller-detail')">Fechar</button>
+      <button class="btn-cancel" onclick="Utils.closeModal('modal-iptvm-reseller-detail')">Cerrar</button>
     </div>
   </div>
 </div>
@@ -790,13 +791,27 @@
 <div class="modal-overlay" id="modal-iptvm-reseller-form">
   <div class="modal">
     <div class="modal-header">
-      <div class="modal-title" id="modal-iptvm-reseller-title"><i class="fas fa-user-tie" style="color:var(--accent3);margin-right:8px;"></i>Novo Revendedor</div>
+      <div class="modal-title" id="modal-iptvm-reseller-title"><i class="fas fa-user-tie" style="color:var(--accent3);margin-right:8px;"></i>Nuevo Revendedor</div>
       <button class="modal-close" onclick="Utils.closeModal('modal-iptvm-reseller-form')"><i class="fas fa-times"></i></button>
     </div>
     <div class="modal-body" id="modal-iptvm-reseller-body"></div>
     <div class="modal-footer">
       <button class="btn-cancel" onclick="Utils.closeModal('modal-iptvm-reseller-form')">Cancelar</button>
-      <button class="btn-submit" onclick="IPTVM.saveReseller()"><i class="fas fa-save"></i> Salvar</button>
+      <button class="btn-submit" onclick="IPTVM.saveReseller()"><i class="fas fa-save"></i> Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Credentials Modal -->
+<div class="modal-overlay" id="modal-iptvm-credentials">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title"><i class="fas fa-key" style="color:var(--accent3);margin-right:8px;"></i>Credenciales Generadas</div>
+      <button class="modal-close" onclick="Utils.closeModal('modal-iptvm-credentials')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body" id="modal-iptvm-credentials-body"></div>
+    <div class="modal-footer">
+      <button class="btn-submit" onclick="Utils.closeModal('modal-iptvm-credentials')"><i class="fas fa-check"></i> Entendido</button>
     </div>
   </div>
 </div>
@@ -805,13 +820,13 @@
 <div class="modal-overlay" id="modal-iptvm-account-form">
   <div class="modal">
     <div class="modal-header">
-      <div class="modal-title" id="modal-iptvm-account-title"><i class="fas fa-server" style="color:var(--accent);margin-right:8px;"></i>Conta de Provedor</div>
+      <div class="modal-title" id="modal-iptvm-account-title"><i class="fas fa-server" style="color:var(--accent);margin-right:8px;"></i>Cuenta de Proveedor</div>
       <button class="modal-close" onclick="Utils.closeModal('modal-iptvm-account-form')"><i class="fas fa-times"></i></button>
     </div>
     <div class="modal-body" id="modal-iptvm-account-body"></div>
     <div class="modal-footer">
       <button class="btn-cancel" onclick="Utils.closeModal('modal-iptvm-account-form')">Cancelar</button>
-      <button class="btn-submit" onclick="IPTVM.saveAccount()"><i class="fas fa-save"></i> Salvar</button>
+      <button class="btn-submit" onclick="IPTVM.saveAccount()"><i class="fas fa-save"></i> Guardar</button>
     </div>
   </div>
 </div>

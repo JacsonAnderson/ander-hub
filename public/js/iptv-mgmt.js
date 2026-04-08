@@ -37,10 +37,10 @@ const IPTVM = {
 
     const titles = {
       'iptvm-dashboard': 'Dashboard IPTV',
-      'iptvm-subscriptions': 'Minhas Assinaturas',
+      'iptvm-subscriptions': 'Mis Suscripciones',
       'admin-iptvm-dashboard': 'Dashboard IPTV',
-      'admin-iptvm-subscriptions': 'Assinaturas IPTV',
-      'admin-iptvm-accounts': 'Contas de Provedor',
+      'admin-iptvm-subscriptions': 'Suscripciones IPTV',
+      'admin-iptvm-accounts': 'Cuentas de Proveedor',
       'admin-iptvm-resellers': 'Revendedores',
     };
     const titleEl = inAdmin
@@ -83,11 +83,11 @@ const IPTVM = {
       const statsHtml = `
         <div class="iptvm-stats-grid">
           <div class="iptvm-stat">
-            <div class="iptvm-stat-label">Total Assinaturas</div>
+            <div class="iptvm-stat-label">Total Suscripciones</div>
             <div class="iptvm-stat-value blue">${data.total}</div>
           </div>
           <div class="iptvm-stat">
-            <div class="iptvm-stat-label">Ativas</div>
+            <div class="iptvm-stat-label">Activas</div>
             <div class="iptvm-stat-value green">${data.active}</div>
           </div>
           <div class="iptvm-stat">
@@ -95,7 +95,7 @@ const IPTVM = {
             <div class="iptvm-stat-value red">${data.overdue}</div>
           </div>
           <div class="iptvm-stat">
-            <div class="iptvm-stat-label">Vencem em 5 dias</div>
+            <div class="iptvm-stat-label">Vencen en 5 días</div>
             <div class="iptvm-stat-value yellow">${data.dueSoon}</div>
           </div>
         </div>`;
@@ -105,7 +105,7 @@ const IPTVM = {
       if (data.overdue > 0) {
         alertHtml = `<div class="iptvm-alert">
           <i class="fas fa-exclamation-triangle"></i>
-          <div class="iptvm-alert-text"><strong>${data.overdue} assinatura(s) vencida(s)</strong> — entre em contato com os clientes.</div>
+          <div class="iptvm-alert-text"><strong>${data.overdue} suscripción(es) vencida(s)</strong> — contacte a los clientes.</div>
         </div>`;
       }
 
@@ -144,11 +144,11 @@ const IPTVM = {
               </tr>`).join('')}
             </tbody>
           </table>`
-        : `<div class="iptvm-empty"><i class="fas fa-satellite-dish"></i><p>Nenhuma assinatura ainda</p></div>`;
+        : `<div class="iptvm-empty"><i class="fas fa-satellite-dish"></i><p>Sin suscripciones ainda</p></div>`;
 
       const overdueHtml = data.overdueList.length > 0
         ? `<table class="iptvm-table">
-            <thead><tr><th>Cliente</th><th>Vencimento</th><th>Valor</th></tr></thead>
+            <thead><tr><th>Cliente</th><th>Vencimiento</th><th>Valor</th></tr></thead>
             <tbody>${data.overdueList.map(s => `
               <tr onclick="IPTVM.openSubDetail('${s.id}')" style="cursor:pointer;">
                 <td><div class="iptvm-client-cell"><span class="iptvm-client-name">${s.client_name}</span><span class="iptvm-client-phone">${s.client_phone || ''}</span></div></td>
@@ -157,18 +157,18 @@ const IPTVM = {
               </tr>`).join('')}
             </tbody>
           </table>`
-        : `<div class="iptvm-empty"><i class="fas fa-check-circle"></i><p>Nenhum pagamento vencido!</p></div>`;
+        : `<div class="iptvm-empty"><i class="fas fa-check-circle"></i><p>Sin pagos vencidos!</p></div>`;
 
       el.innerHTML = `
         ${alertHtml}
         ${statsHtml}
         <div class="iptvm-two-col">
           <div class="iptvm-panel-card">
-            <h4><i class="fas fa-chart-pie"></i> Por Provedor</h4>
+            <h4><i class="fas fa-chart-pie"></i> Por Proveedor</h4>
             ${providerHtml}
             <div class="iptvm-revenue" style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border2)">
               <div class="iptvm-revenue-value">${this._fmtPrice(data.monthlyRevenue)}</div>
-              <div class="iptvm-revenue-label">Receita mensal estimada</div>
+              <div class="iptvm-revenue-label">Ingresos mensuales estimados</div>
             </div>
           </div>
           <div class="iptvm-panel-card">
@@ -177,7 +177,7 @@ const IPTVM = {
           </div>
         </div>
         <div class="iptvm-panel-card">
-          <h4><i class="fas fa-clock"></i> Assinaturas Recentes</h4>
+          <h4><i class="fas fa-clock"></i> Suscripciones Recentes</h4>
           ${recentHtml}
         </div>`;
     } catch (err) {
@@ -192,7 +192,7 @@ const IPTVM = {
     const el = document.getElementById(containerId);
     if (!el) return;
 
-    el.innerHTML = `<div class="iptvm-empty"><i class="fas fa-spinner fa-spin"></i><p>Carregando...</p></div>`;
+    el.innerHTML = `<div class="iptvm-empty"><i class="fas fa-spinner fa-spin"></i><p>Cargando...</p></div>`;
 
     try {
       const params = new URLSearchParams();
@@ -203,7 +203,7 @@ const IPTVM = {
       this._subs = await API.iptvm.subscriptions(params.toString());
 
       if (this._subs.length === 0) {
-        el.innerHTML = `<div class="iptvm-empty"><i class="fas fa-satellite-dish"></i><p>Nenhuma assinatura encontrada</p></div>`;
+        el.innerHTML = `<div class="iptvm-empty"><i class="fas fa-satellite-dish"></i><p>Sin suscripciones encontrada</p></div>`;
         return;
       }
 
@@ -240,8 +240,8 @@ const IPTVM = {
                   <td>${this._payStatusBadge(s.payment_status)}</td>
                   <td>
                     <div class="iptvm-row-actions">
-                      <button class="btn-edit" title="Ver detalhes" onclick="IPTVM.openSubDetail('${s.id}')"><i class="fas fa-eye"></i></button>
-                      <button class="btn-pay" style="padding:5px 8px;font-size:11px;" title="Registrar pagamento" onclick="IPTVM.openPayModal('${s.id}')"><i class="fas fa-dollar-sign"></i></button>
+                      <button class="btn-edit" title="Ver detalles" onclick="IPTVM.openSubDetail('${s.id}')"><i class="fas fa-eye"></i></button>
+                      <button class="btn-pay" style="padding:5px 8px;font-size:11px;" title="Registrar pago" onclick="IPTVM.openPayModal('${s.id}')"><i class="fas fa-dollar-sign"></i></button>
                       ${isAdm ? `<button class="btn-del" title="Excluir" onclick="IPTVM.deleteSub('${s.id}')"><i class="fas fa-trash"></i></button>` : ''}
                     </div>
                   </td>
@@ -250,7 +250,7 @@ const IPTVM = {
           </table>
         </div>`;
     } catch (err) {
-      el.innerHTML = `<div class="iptvm-empty"><i class="fas fa-exclamation-triangle"></i><p>Erro ao carregar assinaturas</p></div>`;
+      el.innerHTML = `<div class="iptvm-empty"><i class="fas fa-exclamation-triangle"></i><p>Error al cargar suscripciones</p></div>`;
       console.error(err);
     }
   },
@@ -275,11 +275,11 @@ const IPTVM = {
 
     Utils.openModal('modal-iptvm-sub-form');
     const title = document.getElementById('modal-iptvm-sub-title');
-    if (title) title.textContent = id ? 'Editar Assinatura' : 'Nova Assinatura';
+    if (title) title.textContent = id ? 'Editar Suscripción' : 'Nueva Suscripción';
 
     const body = document.getElementById('modal-iptvm-sub-body');
     if (!body) return;
-    body.innerHTML = `<div class="iptvm-empty"><i class="fas fa-spinner fa-spin"></i><p>Carregando...</p></div>`;
+    body.innerHTML = `<div class="iptvm-empty"><i class="fas fa-spinner fa-spin"></i><p>Cargando...</p></div>`;
 
     // Load accounts (and resellers for admin)
     try {
@@ -288,7 +288,7 @@ const IPTVM = {
         this._cachedAccounts = accs;
         this._cachedResellers = users.filter(u => u.role === 'reseller');
       }
-    } catch (e) { console.error('Erro ao carregar dados do form', e); }
+    } catch (e) { console.error('Error al cargar datos do form', e); }
 
     const portOptions = [1,2,3,4].map(n => `<option value="${n}" ${sub?.port == n ? 'selected' : ''}>Porta ${n}</option>`).join('');
 
@@ -298,12 +298,12 @@ const IPTVM = {
       const lumixAccs = this._cachedAccounts.filter(a => a.provider === 'lumix');
       const stliveAccs = this._cachedAccounts.filter(a => a.provider === 'stlive');
       accountSelectorHtml = `
-        <div class="iptvm-form-section-title">Conta do Provedor</div>
+        <div class="iptvm-form-section-title">Cuenta del Proveedor</div>
         <div class="form-row">
           <div class="form-group" style="grid-column:1/-1">
-            <label>Selecionar Conta *</label>
+            <label>Seleccionar Cuenta *</label>
             <select id="isub-account-id" onchange="IPTVM._onAccountChange(this.value)">
-              <option value="">— Selecione uma conta —</option>
+              <option value="">— Seleccione una cuenta —</option>
               ${lumixAccs.length ? `<optgroup label="Lumix TV">
                 ${lumixAccs.map(a => `<option value="${a.id}" ${sub?.account_id === a.id ? 'selected' : ''}>${a.account_user} (${a.max_ports || 4} portas)</option>`).join('')}
               </optgroup>` : ''}
@@ -315,8 +315,8 @@ const IPTVM = {
         </div>
         <div class="form-row" id="isub-port-group" style="${sub?.provider !== 'lumix' ? 'display:none' : ''}">
           <div class="form-group">
-            <label>Porta (Lumix) *</label>
-            <select id="isub-port"><option value="">— Selecione a porta —</option>${portOptions}</select>
+            <label>Puerto (Lumix) *</label>
+            <select id="isub-port"><option value="">— Seleccione el puerto —</option>${portOptions}</select>
           </div>
           <div class="form-group" id="isub-port-status"></div>
         </div>`;
@@ -329,9 +329,9 @@ const IPTVM = {
         <div class="iptvm-form-section-title">Revendedor</div>
         <div class="form-row">
           <div class="form-group" style="grid-column:1/-1">
-            <label>Atribuir a</label>
+            <label>Asignar a</label>
             <select id="isub-reseller-id">
-              <option value="">— Minha conta (admin) —</option>
+              <option value="">— Mi cuenta (admin) —</option>
               ${this._cachedResellers.map(r => `<option value="${r.id}" ${sub?.reseller_id === r.id ? 'selected' : ''}>${r.name} (@${r.username})</option>`).join('')}
             </select>
           </div>
@@ -341,29 +341,29 @@ const IPTVM = {
     body.innerHTML = `<form class="iptvm-form" id="iptvm-sub-form" onsubmit="return false">
       <div class="form-row">
         <div class="form-group">
-          <label>Nome do Cliente *</label>
+          <label>Nombre del Cliente *</label>
           <input type="text" id="isub-name" value="${sub?.client_name || ''}" placeholder="Nome completo" required>
         </div>
         <div class="form-group">
-          <label>Telefone / WhatsApp</label>
+          <label>Teléfono / WhatsApp</label>
           <input type="text" id="isub-phone" value="${sub?.client_phone || ''}" placeholder="+595 9...">
         </div>
       </div>
       ${accountSelectorHtml}
-      <div class="iptvm-form-section-title">Dispositivo e Pagamento</div>
+      <div class="iptvm-form-section-title">Dispositivo y Pago</div>
       <div class="form-row">
         <div class="form-group">
-          <label>Nome do Dispositivo</label>
+          <label>Nombre del Dispositivo</label>
           <input type="text" id="isub-device" value="${sub?.device_name || ''}" placeholder="TV Samsung, Celular...">
         </div>
         <div class="form-group">
-          <label>Valor Mensal (₲)</label>
+          <label>Monto Mensual (₲)</label>
           <input type="number" id="isub-price" value="${sub?.price || ''}" placeholder="0">
         </div>
       </div>
       <div class="form-row">
         <div class="form-group">
-          <label>Próximo Vencimento</label>
+          <label>Próximo Vencimiento</label>
           <input type="date" id="isub-next-payment" value="${sub?.next_payment ? sub.next_payment.substring(0,10) : ''}">
         </div>
         ${isAdm && id ? `<div class="form-group">
@@ -376,7 +376,7 @@ const IPTVM = {
       </div>
       ${resellerSelectorHtml}
       <div class="form-group">
-        <label>Observações</label>
+        <label>Observaciones</label>
         <textarea id="isub-notes" placeholder="Notas internas...">${sub?.notes || ''}</textarea>
       </div>
     </form>`;
@@ -404,16 +404,16 @@ const IPTVM = {
           if (data.ports) {
             const portSel = document.getElementById('isub-port');
             if (portSel) {
-              portSel.innerHTML = '<option value="">— Selecione a porta —</option>' +
+              portSel.innerHTML = '<option value="">— Seleccione el puerto —</option>' +
                 data.ports.map(p => {
                   const occupied = p.sub && p.sub.id !== this._editingSubId;
                   return `<option value="${p.port}" ${occupied ? 'disabled' : ''} ${selectedPort == p.port ? 'selected' : ''}>
-                    Porta ${p.port} ${occupied ? `— ${p.sub.client_name} (ocupada)` : '— Livre'}
+                    Porta ${p.port} ${occupied ? `— ${p.sub.client_name} (ocupada)` : '— Libre'}
                   </option>`;
                 }).join('');
             }
             portStatus.innerHTML = `<div style="font-size:11px;color:var(--text3);padding-top:20px;">
-              ${data.ports.filter(p => p.sub).length}/${data.ports.length} portas ocupadas
+              ${data.ports.filter(p => p.sub).length}/${data.ports.length} puertos ocupados
             </div>`;
           }
         } catch (e) { /* ignore */ }
@@ -458,35 +458,71 @@ const IPTVM = {
       Utils.toast('Nome do cliente é obrigatório', 'error'); return;
     }
     if (isAdm && !this._editingSubId && !accountId) {
-      Utils.toast('Selecione uma conta de provedor', 'error'); return;
+      Utils.toast('Seleccione una cuenta de proveedor', 'error'); return;
     }
 
     try {
       if (this._editingSubId) {
         await API.iptvm.updateSubscription(this._editingSubId, data);
-        Utils.toast('Assinatura atualizada!', 'success');
+        Utils.toast('¡Suscripción actualizada!', 'success');
+        Utils.closeModal('modal-iptvm-sub-form');
       } else {
-        await API.iptvm.createSubscription(data);
-        Utils.toast('Assinatura criada!', 'success');
+        const result = await API.iptvm.createSubscription(data);
+        Utils.closeModal('modal-iptvm-sub-form');
+        if (result.generated_credentials) {
+          this._showCredentials(result.client_name || data.client_name, result.generated_credentials);
+        } else {
+          Utils.toast('¡Suscripción creada!', 'success');
+        }
       }
-      Utils.closeModal('modal-iptvm-sub-form');
       this.loadSubscriptions();
       this.loadDashboard();
     } catch (err) {
-      Utils.toast(err.message || 'Erro ao salvar assinatura', 'error');
+      Utils.toast(err.message || 'Error al guardar suscripción', 'error');
       console.error(err);
     }
   },
 
+  _showCredentials(clientName, creds) {
+    Utils.openModal('modal-iptvm-credentials');
+    const body = document.getElementById('modal-iptvm-credentials-body');
+    if (!body) return;
+    body.innerHTML = `
+      <div style="text-align:center;margin-bottom:20px;">
+        <div style="width:56px;height:56px;border-radius:50%;background:rgba(0,230,118,0.15);border:2px solid rgba(0,230,118,0.4);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;">
+          <i class="fas fa-check" style="color:var(--accent3);font-size:22px;"></i>
+        </div>
+        <div style="font-size:16px;font-weight:800;">${clientName}</div>
+        <div style="font-size:12px;color:var(--text3);margin-top:4px;">Cliente registrado con acceso al sistema</div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius2);padding:20px;margin-bottom:16px;">
+        <div style="font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:14px;">Credenciales de Acceso</div>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div>
+            <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">Usuario</div>
+            <div style="font-family:monospace;font-size:15px;font-weight:700;color:var(--accent);background:rgba(0,176,255,0.08);padding:8px 12px;border-radius:8px;border:1px solid rgba(0,176,255,0.2);">${creds.username}</div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">Contraseña</div>
+            <div style="font-family:monospace;font-size:15px;font-weight:700;color:var(--accent3);background:rgba(0,230,118,0.08);padding:8px 12px;border-radius:8px;border:1px solid rgba(0,230,118,0.2);">${creds.password_plain}</div>
+          </div>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--text3);text-align:center;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:8px;padding:10px;">
+        <i class="fas fa-exclamation-triangle" style="color:#f59e0b"></i>
+        Anote estas credenciales — la contraseña no podrá ser recuperada después.
+      </div>`;
+  },
+
   async deleteSub(id) {
-    if (!confirm('Excluir esta assinatura? Esta ação não pode ser desfeita.')) return;
+    if (!confirm('¿Eliminar esta suscripción? Esta acción no puede deshacerse.')) return;
     try {
       await API.iptvm.deleteSubscription(id);
-      Utils.toast('Assinatura removida', 'success');
+      Utils.toast('Suscripción eliminada', 'success');
       this.loadSubscriptions();
       this.loadDashboard();
     } catch (err) {
-      Utils.toast('Erro ao excluir', 'error');
+      Utils.toast('Error al eliminar', 'error');
     }
   },
 
@@ -497,7 +533,7 @@ const IPTVM = {
     Utils.openModal('modal-iptvm-sub-detail');
     const body = document.getElementById('modal-iptvm-sub-detail-body');
     if (!body) return;
-    body.innerHTML = `<div class="iptvm-empty"><i class="fas fa-spinner fa-spin"></i><p>Carregando...</p></div>`;
+    body.innerHTML = `<div class="iptvm-empty"><i class="fas fa-spinner fa-spin"></i><p>Cargando...</p></div>`;
 
     try {
       const sub = await API.iptvm.getSubscription(id);
@@ -509,13 +545,13 @@ const IPTVM = {
           <div class="pay-history-item">
             <div class="pay-history-dot ${h.type}"></div>
             <div class="pay-history-info">
-              <div class="pay-history-type">${h.type === 'registration' ? 'Cadastro' : 'Pagamento'}</div>
+              <div class="pay-history-type">${h.type === 'registration' ? 'Registro' : 'Pago'}</div>
               <div class="pay-history-date">${this._fmtDatetime(h.paid_at)}${h.next_payment ? ` — Próx.: ${this._fmtDate(h.next_payment)}` : ''}</div>
               ${h.notes ? `<div class="pay-history-notes">${h.notes}</div>` : ''}
             </div>
             <div class="pay-history-amount">${this._fmtPrice(h.amount)}</div>
           </div>`).join('')
-        : `<div class="iptvm-empty" style="padding:20px"><i class="fas fa-history"></i><p>Sem histórico</p></div>`;
+        : `<div class="iptvm-empty" style="padding:20px"><i class="fas fa-history"></i><p>Sin historial</p></div>`;
 
       body.innerHTML = `
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
@@ -533,18 +569,18 @@ const IPTVM = {
 
         <div class="sub-detail-grid">
           <div class="sub-detail-card">
-            <div class="sub-detail-card-title">Informações da Assinatura</div>
+            <div class="sub-detail-card-title">Información de la Suscripción</div>
             <div class="sub-detail-row"><span class="sub-detail-label">Dispositivo</span><span class="sub-detail-value">${sub.device_name || '—'}</span></div>
             ${sub.port ? `<div class="sub-detail-row"><span class="sub-detail-label">Porta</span><span class="sub-detail-value"><span class="port-dot">${sub.port}</span></span></div>` : ''}
             <div class="sub-detail-row"><span class="sub-detail-label">Valor</span><span class="sub-detail-value" style="color:var(--accent3)">${this._fmtPrice(sub.price)}</span></div>
-            <div class="sub-detail-row"><span class="sub-detail-label">Próx. Vencimento</span><span class="sub-detail-value">${this._fmtDate(sub.next_payment)}</span></div>
-            <div class="sub-detail-row"><span class="sub-detail-label">Cadastrado em</span><span class="sub-detail-value">${this._fmtDate(sub.registered_at)}</span></div>
+            <div class="sub-detail-row"><span class="sub-detail-label">Próx. Vencimiento</span><span class="sub-detail-value">${this._fmtDate(sub.next_payment)}</span></div>
+            <div class="sub-detail-row"><span class="sub-detail-label">Registrado</span><span class="sub-detail-value">${this._fmtDate(sub.registered_at)}</span></div>
             ${isAdm ? `<div class="sub-detail-row"><span class="sub-detail-label">Revendedor</span><span class="sub-detail-value">${sub.reseller_name || '—'}</span></div>` : ''}
             ${sub.notes ? `<div class="sub-detail-row"><span class="sub-detail-label">Obs.</span><span class="sub-detail-value">${sub.notes}</span></div>` : ''}
           </div>
           ${isAdm ? `
           <div class="sub-detail-card">
-            <div class="sub-detail-card-title">Dados da Conta (Confidencial)</div>
+            <div class="sub-detail-card-title">Datos de la Cuenta (Confidencial)</div>
             <div class="sub-detail-row">
               <span class="sub-detail-label">Usuário</span>
               <span class="sub-detail-value"><span class="sub-sensitive"><span class="val">${sub.account_user || '—'}</span></span></span>
@@ -564,11 +600,11 @@ const IPTVM = {
         </div>
 
         <div class="iptvm-panel-card">
-          <h4><i class="fas fa-history"></i> Histórico de Pagamentos</h4>
+          <h4><i class="fas fa-history"></i> Historial de Pagos</h4>
           <div class="pay-history">${historyHtml}</div>
         </div>`;
     } catch (err) {
-      body.innerHTML = `<div class="iptvm-empty"><i class="fas fa-exclamation-triangle"></i><p>Erro ao carregar detalhes</p></div>`;
+      body.innerHTML = `<div class="iptvm-empty"><i class="fas fa-exclamation-triangle"></i><p>Error al cargar detalhes</p></div>`;
       console.error(err);
     }
   },
@@ -604,13 +640,13 @@ const IPTVM = {
             <input type="number" id="ipay-amount" value="${sub.price || ''}" placeholder="0">
           </div>
           <div class="form-group">
-            <label>Próximo Vencimento *</label>
+            <label>Próximo Vencimiento *</label>
             <input type="date" id="ipay-next" value="${nextStr}" required>
           </div>
         </div>
         <div class="form-group">
-          <label>Observações</label>
-          <input type="text" id="ipay-notes" placeholder="Pago via Pix, etc.">
+          <label>Observaciones</label>
+          <input type="text" id="ipay-notes" placeholder="Pago vía transferencia, etc.">
         </div>
       </form>`;
   },
@@ -624,18 +660,18 @@ const IPTVM = {
       next_payment: document.getElementById('ipay-next')?.value,
       notes: document.getElementById('ipay-notes')?.value?.trim(),
     };
-    if (!data.next_payment) { Utils.toast('Data obrigatória', 'error'); return; }
+    if (!data.next_payment) { Utils.toast('Fecha obligatoria', 'error'); return; }
 
     try {
       await API.iptvm.registerPayment(id, data);
-      Utils.toast('Pagamento registrado!', 'success');
+      Utils.toast('¡Pago registrado!', 'success');
       Utils.closeModal('modal-iptvm-pay');
       this.loadSubscriptions();
       this.loadDashboard();
       // If detail modal is open, refresh it
       if (this._viewingSubId === id) this.openSubDetail(id);
     } catch (err) {
-      Utils.toast('Erro ao registrar pagamento', 'error');
+      Utils.toast('Error al registrar pago', 'error');
       console.error(err);
     }
   },
@@ -651,7 +687,7 @@ const IPTVM = {
       const accounts = await API.iptvm.accounts();
 
       if (accounts.length === 0) {
-        el.innerHTML = `<div class="iptvm-empty"><i class="fas fa-server"></i><p>Nenhuma conta cadastrada</p></div>`;
+        el.innerHTML = `<div class="iptvm-empty"><i class="fas fa-server"></i><p>Sin cuentas registradas</p></div>`;
         return;
       }
 
@@ -669,7 +705,7 @@ const IPTVM = {
           </div>
         </div>`).join('');
     } catch (err) {
-      el.innerHTML = `<div class="iptvm-empty"><i class="fas fa-exclamation-triangle"></i><p>Erro ao carregar contas</p></div>`;
+      el.innerHTML = `<div class="iptvm-empty"><i class="fas fa-exclamation-triangle"></i><p>Error al cargar contas</p></div>`;
     }
   },
 
@@ -677,7 +713,7 @@ const IPTVM = {
     Utils.openModal('modal-iptvm-account-detail');
     const body = document.getElementById('modal-iptvm-account-detail-body');
     if (!body) return;
-    body.innerHTML = `<div class="iptvm-empty"><i class="fas fa-spinner fa-spin"></i><p>Carregando...</p></div>`;
+    body.innerHTML = `<div class="iptvm-empty"><i class="fas fa-spinner fa-spin"></i><p>Cargando...</p></div>`;
 
     try {
       const data = await API.iptvm.accountSubscribers(id);
@@ -693,7 +729,7 @@ const IPTVM = {
                 <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
                   <span class="port-dot">${p.port}</span>
                   <span style="font-size:12px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1px;">Porta ${p.port}</span>
-                  <span style="margin-left:auto">${p.sub ? '<span class="iptvm-badge active">Ocupada</span>' : '<span class="iptvm-badge inactive">Livre</span>'}</span>
+                  <span style="margin-left:auto">${p.sub ? '<span class="iptvm-badge active">Ocupado</span>' : '<span class="iptvm-badge inactive">Libre</span>'}</span>
                 </div>
                 ${p.sub ? `
                   <div style="font-size:13px;font-weight:700;color:var(--text)">${p.sub.client_name}</div>
@@ -704,9 +740,9 @@ const IPTVM = {
                     ${this._payStatusBadge(p.sub.payment_status)}
                   </div>
                   <button style="margin-top:10px;width:100%;padding:6px;background:rgba(0,176,255,0.1);border:1px solid rgba(0,176,255,0.2);color:var(--accent);border-radius:8px;cursor:pointer;font-size:11px;font-weight:700;" onclick="IPTVM.openSubDetail('${p.sub.id}')">
-                    <i class="fas fa-eye"></i> Ver detalhes
+                    <i class="fas fa-eye"></i> Ver detalles
                   </button>
-                ` : `<div style="font-size:12px;color:var(--text3);text-align:center;padding:10px 0;opacity:0.5;">Nenhum cliente</div>`}
+                ` : `<div style="font-size:12px;color:var(--text3);text-align:center;padding:10px 0;opacity:0.5;">Sin clientes</div>`}
               </div>`).join('')}
           </div>`;
       } else if (subs) {
@@ -725,7 +761,7 @@ const IPTVM = {
                   </tr>`).join('')}
               </tbody>
             </table>
-          </div>` : `<div class="iptvm-empty"><i class="fas fa-user-slash"></i><p>Nenhum cliente nesta conta</p></div>`;
+          </div>` : `<div class="iptvm-empty"><i class="fas fa-user-slash"></i><p>Sin clientes nesta conta</p></div>`;
       }
 
       body.innerHTML = `
@@ -736,13 +772,13 @@ const IPTVM = {
           <div>
             <div style="font-size:17px;font-weight:800;">${account.account_user}</div>
             <div style="font-size:12px;color:var(--text3);margin-top:2px;">${isLumix ? `Lumix TV · ${account.max_ports || 4} portas` : 'STlive · 1 tela'}</div>
-            <div style="font-size:12px;color:var(--text3);margin-top:2px;">Custo: ${this._fmtPrice(account.cost_price)} · ${total} cliente(s) ativo(s)</div>
+            <div style="font-size:12px;color:var(--text3);margin-top:2px;">Custo: ${this._fmtPrice(account.cost_price)} · ${total} cliente(s) activo(s)</div>
           </div>
           <button class="btn-edit" style="margin-left:auto" onclick="IPTVM.openAccountForm('${account.id}')"><i class="fas fa-edit"></i></button>
         </div>
         ${slotsHtml}`;
     } catch (err) {
-      body.innerHTML = `<div class="iptvm-empty"><i class="fas fa-exclamation-triangle"></i><p>Erro ao carregar dados da conta</p></div>`;
+      body.innerHTML = `<div class="iptvm-empty"><i class="fas fa-exclamation-triangle"></i><p>Error al cargar datos da conta</p></div>`;
       console.error(err);
     }
   },
@@ -759,25 +795,25 @@ const IPTVM = {
     API.iptvm.accounts().then(accounts => {
       this._accounts = accounts;
       const a = id ? accounts.find(acc => acc.id === id) : null;
-      if (title) title.textContent = id ? 'Editar Conta' : 'Nova Conta de Provedor';
+      if (title) title.textContent = id ? 'Editar Cuenta' : 'Nova Cuenta de Proveedor';
 
       body.innerHTML = `<form class="iptvm-form" id="iptvm-account-form" onsubmit="return false">
         <div class="form-row">
           <div class="form-group">
-            <label>Provedor *</label>
+            <label>Proveedor *</label>
             <select id="iacc-provider" onchange="IPTVM._toggleMaxPorts(this.value)">
               <option value="lumix" ${a?.provider === 'lumix' ? 'selected' : ''}>Lumix TV</option>
               <option value="stlive" ${a?.provider === 'stlive' ? 'selected' : ''}>STlive</option>
             </select>
           </div>
           <div class="form-group" id="iacc-maxports-group">
-            <label>Máx. Portas (Lumix)</label>
+            <label>Máx. Puertos (Lumix)</label>
             <input type="number" id="iacc-maxports" value="${a?.max_ports || 4}" min="1" max="8">
           </div>
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label>Usuário *</label>
+            <label>Usuario *</label>
             <input type="text" id="iacc-user" value="${a?.account_user || ''}" placeholder="login@provedor.com">
           </div>
           <div class="form-group">
@@ -787,7 +823,7 @@ const IPTVM = {
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label>Custo de Compra (₲)</label>
+            <label>Costo de Compra (₲)</label>
             <input type="number" id="iacc-cost" value="${a?.cost_price || ''}" placeholder="0">
           </div>
           <div class="form-group"></div>
@@ -818,33 +854,33 @@ const IPTVM = {
     };
 
     if (!data.provider || !data.account_user) {
-      Utils.toast('Provedor e usuário são obrigatórios', 'error'); return;
+      Utils.toast('Proveedor y usuario son obligatorios', 'error'); return;
     }
 
     try {
       if (this._editingAccountId) {
         await API.iptvm.updateAccount(this._editingAccountId, data);
-        Utils.toast('Conta atualizada!', 'success');
+        Utils.toast('¡Cuenta actualizada!', 'success');
       } else {
         await API.iptvm.createAccount(data);
-        Utils.toast('Conta criada!', 'success');
+        Utils.toast('¡Cuenta creada!', 'success');
       }
       Utils.closeModal('modal-iptvm-account-form');
       this.loadAccounts();
     } catch (err) {
-      Utils.toast('Erro ao salvar conta', 'error');
+      Utils.toast('Error al guardar conta', 'error');
       console.error(err);
     }
   },
 
   async deleteAccount(id) {
-    if (!confirm('Excluir esta conta de provedor?')) return;
+    if (!confirm('¿Eliminar esta cuenta de proveedor?')) return;
     try {
       await API.iptvm.deleteAccount(id);
-      Utils.toast('Conta removida', 'success');
+      Utils.toast('Cuenta eliminada', 'success');
       this.loadAccounts();
     } catch (err) {
-      Utils.toast('Erro ao excluir', 'error');
+      Utils.toast('Error al eliminar', 'error');
     }
   },
 
@@ -863,14 +899,14 @@ const IPTVM = {
       const resellers = this._resellers.filter(u => u.role === 'reseller');
 
       if (resellers.length === 0) {
-        el.innerHTML = `<div class="iptvm-empty"><i class="fas fa-users"></i><p>Nenhum revendedor cadastrado ainda.</p></div>`;
+        el.innerHTML = `<div class="iptvm-empty"><i class="fas fa-users"></i><p>Sin revendedores registrados.</p></div>`;
         return;
       }
 
       el.innerHTML = `
         <div class="iptvm-table-wrap">
           <table class="iptvm-table">
-            <thead><tr><th>Nome</th><th>Usuário</th><th>Telefone</th><th>Status</th><th>Criado em</th><th></th></tr></thead>
+            <thead><tr><th>Nome</th><th>Usuário</th><th>Telefone</th><th>Status</th><th>Registrado</th><th></th></tr></thead>
             <tbody>
               ${resellers.map(r => `
                 <tr style="cursor:pointer;" onclick="IPTVM.openResellerDetail('${r.id}','${(r.name||'').replace(/'/g,"\\'")}')">
@@ -890,7 +926,7 @@ const IPTVM = {
           </table>
         </div>`;
     } catch (err) {
-      el.innerHTML = `<div class="iptvm-empty"><i class="fas fa-exclamation-triangle"></i><p>Erro ao carregar revendedores</p></div>`;
+      el.innerHTML = `<div class="iptvm-empty"><i class="fas fa-exclamation-triangle"></i><p>Error al cargar revendedores</p></div>`;
     }
   },
 
@@ -900,27 +936,27 @@ const IPTVM = {
     Utils.openModal('modal-iptvm-reseller-form');
     const title = document.getElementById('modal-iptvm-reseller-title');
     const body = document.getElementById('modal-iptvm-reseller-body');
-    if (title) title.textContent = id ? 'Editar Revendedor' : 'Novo Revendedor';
+    if (title) title.textContent = id ? 'Editar Revendedor' : 'Nuevo Revendedor';
     if (!body) return;
 
     body.innerHTML = `<form class="iptvm-form" id="iptvm-reseller-form" onsubmit="return false">
       <div class="form-row">
         <div class="form-group">
-          <label>Nome Completo *</label>
+          <label>Nombre Completo *</label>
           <input type="text" id="ireseller-name" value="${r?.name || ''}" placeholder="Nome do revendedor">
         </div>
         <div class="form-group">
-          <label>Usuário (login) *</label>
+          <label>Usuario (login) *</label>
           <input type="text" id="ireseller-username" value="${r?.username || ''}" placeholder="usuario123" ${id ? 'readonly style="opacity:0.6"' : ''}>
         </div>
       </div>
       <div class="form-row">
         <div class="form-group">
-          <label>${id ? 'Nova Senha (deixe vazio para não alterar)' : 'Senha *'}</label>
+          <label>${id ? 'Nueva Contraseña (dejar vacío para no cambiar)' : 'Contraseña *'}</label>
           <input type="password" id="ireseller-password" placeholder="mínimo 6 caracteres">
         </div>
         <div class="form-group">
-          <label>Telefone / WhatsApp</label>
+          <label>Teléfono / WhatsApp</label>
           <input type="text" id="ireseller-phone" value="${r?.phone || ''}" placeholder="+595 9...">
         </div>
       </div>
@@ -941,9 +977,9 @@ const IPTVM = {
     const password = document.getElementById('ireseller-password')?.value;
     const phone = document.getElementById('ireseller-phone')?.value?.trim();
 
-    if (!name) { Utils.toast('Nome é obrigatório', 'error'); return; }
-    if (!id && (!username || !password)) { Utils.toast('Usuário e senha são obrigatórios', 'error'); return; }
-    if (password && password.length < 6) { Utils.toast('Senha deve ter mínimo 6 caracteres', 'error'); return; }
+    if (!name) { Utils.toast('El nombre es obligatorio', 'error'); return; }
+    if (!id && (!username || !password)) { Utils.toast('Usuario y contraseña son obligatorios', 'error'); return; }
+    if (password && password.length < 6) { Utils.toast('La contraseña debe tener mínimo 6 caracteres', 'error'); return; }
 
     try {
       if (id) {
@@ -952,15 +988,15 @@ const IPTVM = {
         const activeEl = document.getElementById('ireseller-active');
         if (activeEl) updates.active = activeEl.value === 'true';
         await API.auth.updateUser(id, updates);
-        Utils.toast('Revendedor atualizado!', 'success');
+        Utils.toast('¡Revendedor actualizado!', 'success');
       } else {
         await API.auth.createUser({ username, name, password, phone, role: 'reseller' });
-        Utils.toast('Revendedor criado! Ele já pode fazer login.', 'success');
+        Utils.toast('¡Revendedor creado! Ya puede iniciar sesión.', 'success');
       }
       Utils.closeModal('modal-iptvm-reseller-form');
       this.loadResellers();
     } catch (err) {
-      Utils.toast(err.message || 'Erro ao salvar', 'error');
+      Utils.toast(err.message || 'Error al guardar', 'error');
       console.error(err);
     }
   },
@@ -971,7 +1007,7 @@ const IPTVM = {
     const titleEl = document.getElementById('modal-iptvm-reseller-detail-title');
     if (titleEl) titleEl.textContent = name || 'Revendedor';
     if (!body) return;
-    body.innerHTML = `<div class="iptvm-empty"><i class="fas fa-spinner fa-spin"></i><p>Carregando...</p></div>`;
+    body.innerHTML = `<div class="iptvm-empty"><i class="fas fa-spinner fa-spin"></i><p>Cargando...</p></div>`;
 
     try {
       const data = await API.iptvm.resellerSubscriptions(id);
@@ -980,7 +1016,7 @@ const IPTVM = {
       const subsHtml = subs.length > 0 ? `
         <div class="iptvm-table-wrap">
           <table class="iptvm-table">
-            <thead><tr><th>Cliente</th><th>Provedor</th><th>Dispositivo</th><th>Vencimento</th><th>Valor</th><th>Status</th></tr></thead>
+            <thead><tr><th>Cliente</th><th>Provedor</th><th>Dispositivo</th><th>Vencimiento</th><th>Valor</th><th>Status</th></tr></thead>
             <tbody>
               ${subs.map(s => `
                 <tr onclick="Utils.closeModal('modal-iptvm-reseller-detail');IPTVM.openSubDetail('${s.id}')" style="cursor:pointer;">
@@ -994,33 +1030,33 @@ const IPTVM = {
             </tbody>
           </table>
         </div>` :
-        `<div class="iptvm-empty"><i class="fas fa-satellite-dish"></i><p>Nenhuma assinatura cadastrada ainda</p></div>`;
+        `<div class="iptvm-empty"><i class="fas fa-satellite-dish"></i><p>Sin suscripciones cadastrada ainda</p></div>`;
 
       body.innerHTML = `
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;">
           <div class="iptvm-stat"><div class="iptvm-stat-label">Total</div><div class="iptvm-stat-value blue">${stats.total}</div></div>
-          <div class="iptvm-stat"><div class="iptvm-stat-label">Ativas</div><div class="iptvm-stat-value green">${stats.active}</div></div>
+          <div class="iptvm-stat"><div class="iptvm-stat-label">Activas</div><div class="iptvm-stat-value green">${stats.active}</div></div>
           <div class="iptvm-stat"><div class="iptvm-stat-label">Vencidas</div><div class="iptvm-stat-value red">${stats.overdue}</div></div>
           <div class="iptvm-stat"><div class="iptvm-stat-label">Receita/mês</div><div class="iptvm-stat-value" style="font-size:16px;color:var(--accent3)">${this._fmtPrice(stats.monthlyRevenue)}</div></div>
         </div>
         <h4 style="font-size:13px;font-weight:800;margin-bottom:12px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;">
-          <i class="fas fa-list" style="color:var(--accent3)"></i> Assinaturas
+          <i class="fas fa-list" style="color:var(--accent3)"></i> Suscripciones
         </h4>
         ${subsHtml}`;
     } catch (err) {
-      body.innerHTML = `<div class="iptvm-empty"><i class="fas fa-exclamation-triangle"></i><p>Erro ao carregar dados</p></div>`;
+      body.innerHTML = `<div class="iptvm-empty"><i class="fas fa-exclamation-triangle"></i><p>Error al cargar datos</p></div>`;
       console.error(err);
     }
   },
 
   async deleteReseller(id, name) {
-    if (!confirm(`Excluir o revendedor "${name}"? Esta ação não pode ser desfeita.`)) return;
+    if (!confirm(`¿Eliminar al revendedor "${name}"? Esta acción no puede deshacerse.`)) return;
     try {
       await API.auth.deleteUser(id);
-      Utils.toast('Revendedor removido', 'success');
+      Utils.toast('Revendedor eliminado', 'success');
       this.loadResellers();
     } catch (err) {
-      Utils.toast('Erro ao excluir', 'error');
+      Utils.toast('Error al eliminar', 'error');
     }
   },
 
