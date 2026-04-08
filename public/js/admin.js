@@ -814,9 +814,9 @@ const Admin = {
     if (data.sale_price) data.sale_price = Number(data.sale_price);
     // Convertir IDs vacíos a null para dynamic_select
     if (type === 'payment') {
-      data.client_id = data.client_id ? parseInt(data.client_id) : null;
-      data.service_id = data.service_id ? parseInt(data.service_id) : null;
-      data.product_id = data.product_id ? parseInt(data.product_id) : null;
+      data.client_id = data.client_id || null;
+      data.service_id = data.service_id || null;
+      data.product_id = data.product_id || null;
     }
 
     const apiMap = { product: 'products', service: 'services', iptv: 'iptv', tool: 'tools', project: 'projects', video: 'videos', client: 'clients', payment: 'payments' };
@@ -832,14 +832,10 @@ const Admin = {
       Utils.closeModal('modal-admin-form');
       Utils.toast((this.formEditId ? 'Actualizado' : 'Agregado') + ' correctamente!', 'success');
 
-      // Si es pago nuevo, ofrecer agregar media
+      // Si es pago nuevo, mostrar directamente el gestor de media
       if (type === 'payment' && !this.formEditId && result && result.id) {
-        if (confirm('¿Deseas agregar fotos o videos del trabajo?')) {
-          this.formEditId = result.id;
-          this.formType = 'payment';
-          this.openForm('payment', result.id);
-          return;
-        }
+        this.formEditId = result.id;
+        this.loadPaymentMedia(result.id);
       }
 
       this.loadAllLists();
