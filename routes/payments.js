@@ -157,7 +157,7 @@ router.get('/dashboard', authenticate, adminOnly, async (req, res) => {
     });
     const recentPayments = all
       .sort((a, b) => (b.payment_date || '').localeCompare(a.payment_date || ''))
-      .slice(0, 5);
+      .slice(0, 8);
     const pending = all.filter(p => p.status === 'Pendiente');
     const pendingData = {
       count: pending.length,
@@ -170,6 +170,36 @@ router.get('/dashboard', authenticate, adminOnly, async (req, res) => {
       statusMap[p.status].count++;
       statusMap[p.status].total += p.sale_price || 0;
     });
+
+    // Breakdown por tipo: servicios vs ventas (productos)
+    const calcMonthly = (subset) => Array.from({ length: 12 }, (_, i) => {
+      const m = String(i + 1).padStart(2, '0');
+      const mp = subset.filter(p => (p.payment_date || '').startsWith(`${year}-${m}`));
+      return { month: i + 1, profit: mp.reduce((s, p) => s + ((p.sale_price || 0) - (p.cost_price || 0)), 0) };
+    });
+    const servicesPaid = paid.filter(p => p.service_id || (p.concept && !p.product_id));
+    const productsPaid = paid.filter(p => p.product_id);
+    const byType = {
+      services: {
+        profit: servicesPaid.reduce((s, p) => s + ((p.sale_price||0) - (p.cost_price||0)), 0),
+        sales:  servicesPaid.reduce((s, p) => s + (p.sale_price||0), 0),
+        count:  servicesPaid.length,
+        monthlyData: calcMonthly(servicesPaid),
+        pending: all.filter(p => p.status === 'Pendiente' && (p.service_id || !p.product_id)).length,
+        recentPayments: all.filter(p => p.service_id || !p.product_id)
+          .sort((a, b) => (b.payment_date||'').localeCompare(a.payment_date||'')).slice(0, 6)
+      },
+      products: {
+        profit: productsPaid.reduce((s, p) => s + ((p.sale_price||0) - (p.cost_price||0)), 0),
+        sales:  productsPaid.reduce((s, p) => s + (p.sale_price||0), 0),
+        count:  productsPaid.length,
+        monthlyData: calcMonthly(productsPaid),
+        pending: all.filter(p => p.status === 'Pendiente' && p.product_id).length,
+        recentPayments: all.filter(p => p.product_id)
+          .sort((a, b) => (b.payment_date||'').localeCompare(a.payment_date||'')).slice(0, 6)
+      }
+    };
+
     // Conteos
     const [clientsSnap, productsSnap, servicesSnap] = await Promise.all([
       db.collection('users').where('role', '==', 'client').get(),
@@ -180,6 +210,7 @@ router.get('/dashboard', authenticate, adminOnly, async (req, res) => {
       totals, monthTotals, monthlyData, recentPayments,
       pending: pendingData,
       byStatus: Object.values(statusMap),
+      byType,
       counts: {
         clients: clientsSnap.size,
         products: productsSnap.size,

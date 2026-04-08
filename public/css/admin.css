@@ -137,3 +137,42 @@
 /* Earnings */
 .earnings-total { font-family: var(--font-head); font-size: 40px; font-weight: 900; color: var(--accent3); margin: 12px 0; }
 .earnings-sub { font-size: 13px; color: var(--text2); }
+
+/* ── Dashboard filter tabs ─────────────────────────────────── */
+.dash-tabs {
+  display: flex; gap: 6px; margin-bottom: 20px; flex-wrap: wrap;
+}
+.dash-tab {
+  display: flex; align-items: center; gap: 7px;
+  padding: 9px 18px; border-radius: var(--radius2);
+  font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.2s;
+  background: var(--surface); border: 1px solid var(--border2); color: var(--text2);
+}
+.dash-tab i { font-size: 12px; }
+.dash-tab:hover { border-color: var(--accent3); color: var(--accent3); }
+.dash-tab.active { background: rgba(0,230,118,0.12); border-color: rgba(0,230,118,0.4); color: var(--accent3); }
+.dash-tab.active.iptv-tab { background: rgba(0,176,255,0.12); border-color: rgba(0,176,255,0.4); color: var(--accent); }
+.dash-tab.active.service-tab { background: rgba(255,140,0,0.12); border-color: rgba(255,140,0,0.4); color: var(--orange); }
+.dash-tab.active.ventas-tab { background: rgba(255,215,0,0.12); border-color: rgba(255,215,0,0.4); color: var(--gold); }
+
+/* ── IPTV alert in dashboard ───────────────────────────────── */
+#dash-iptv-alert .alert-box {
+  display: flex; align-items: center; gap: 12px;
+  background: rgba(255,59,92,0.08); border: 1px solid rgba(255,59,92,0.25);
+  border-radius: var(--radius2); padding: 12px 16px;
+}
+#dash-iptv-alert .alert-box i { color: var(--red); font-size: 16px; flex-shrink: 0; }
+
+/* ── Provider mini-bars ────────────────────────────────────── */
+.dash-provider-bar { display: flex; flex-direction: column; gap: 14px; }
+.dash-pbar-row { display: flex; flex-direction: column; gap: 5px; }
+.dash-pbar-label { display: flex; justify-content: space-between; font-size: 12px; color: var(--text2); font-weight: 600; }
+.dash-pbar-track { height: 10px; background: var(--border2); border-radius: 5px; overflow: hidden; }
+.dash-pbar-fill { height: 100%; border-radius: 5px; transition: width 0.6s ease; }
+.dash-pbar-fill.lumix  { background: linear-gradient(90deg,#00e676,#00c853); }
+.dash-pbar-fill.stlive { background: linear-gradient(90deg,#00b0ff,#0091ea); }
+
+@media (max-width: 600px) {
+  .dash-tabs { gap: 4px; }
+  .dash-tab { padding: 8px 12px; font-size: 12px; }
+}

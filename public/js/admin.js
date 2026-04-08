@@ -154,36 +154,200 @@ const Admin = {
   },
 
   // ===== DASHBOARD =====
+  _dashData: null,      // payments dashboard data
+  _iptvData: null,      // iptv dashboard data
+  _dashFilter: 'general',
+
   async loadDashboard() {
+    // Populate year selector
+    const yearSel = document.getElementById('dash-year-select');
+    if (yearSel && !yearSel.options.length) {
+      const now = new Date().getFullYear();
+      for (let y = now; y >= now - 3; y--) {
+        yearSel.add(new Option(y, y, y === now, y === now));
+      }
+    }
+    const year = yearSel ? yearSel.value : new Date().getFullYear();
+
     try {
-      const data = await API.payments.dashboard();
-      // Stats cards
-      document.getElementById('dash-total-gs').textContent = '₲ ' + Utils.formatGs(data.totals.total_profit);
-      document.getElementById('dash-clients-count').textContent = data.counts.clients;
-      document.getElementById('dash-services-count').textContent = data.totals.total_transactions;
-      document.getElementById('dash-products-count').textContent = data.counts.products;
-      // Earnings display
-      const earningsEl = document.getElementById('total-earnings-display');
-      const earningsUsd = document.getElementById('total-earnings-usd');
-      if (earningsEl) earningsEl.textContent = '₲ ' + Utils.formatGs(data.totals.total_profit);
-      if (earningsUsd) earningsUsd.textContent = '≈ USD ' + (data.totals.total_profit / 7500).toFixed(2);
-      // Bar chart
-      this.renderBarChart(data.monthlyData);
-      // Recent payments table
-      this.renderRecentPayments(data.recentPayments);
+      // Fetch both dashboards in parallel
+      const [payData, iptvData] = await Promise.allSettled([
+        API.payments.dashboard(year),
+        Auth.isAdmin ? API.iptvm.dashboard() : Promise.resolve(null)
+      ]);
+      this._dashData = payData.status === 'fulfilled' ? payData.value : null;
+      this._iptvData = iptvData.status === 'fulfilled' ? iptvData.value : null;
+
+      // Update payments section stats
+      if (this._dashData) {
+        const earningsEl = document.getElementById('total-earnings-display');
+        const earningsUsd = document.getElementById('total-earnings-usd');
+        if (earningsEl) earningsEl.textContent = '₲ ' + Utils.formatGs(this._dashData.totals.total_profit);
+        if (earningsUsd) earningsUsd.textContent = '≈ USD ' + (this._dashData.totals.total_profit / 7500).toFixed(2);
+      }
+
       // Date
       const dateEl = document.getElementById('admin-date-display');
       if (dateEl) dateEl.textContent = Utils.getSpanishDate();
+
+      // Render current filter
+      this.filterDash(this._dashFilter, false);
     } catch (err) { console.error('Dashboard error:', err); }
   },
 
-  renderBarChart(monthlyData) {
+  filterDash(filter, updateTab = true) {
+    this._dashFilter = filter;
+    const p = this._dashData;
+    const iv = this._iptvData;
+
+    // Update tab buttons
+    if (updateTab) {
+      document.querySelectorAll('.dash-tab').forEach(t => t.classList.remove('active'));
+      const tab = document.getElementById(`dash-tab-${filter}`);
+      if (tab) tab.classList.add('active');
+    }
+
+    const gs = v => '₲ ' + Utils.formatGs(v || 0);
+
+    // Helper: set stat card
+    const setStat = (n, label, val, sub, color) => {
+      const lEl = document.getElementById(`ds-label-${n}`);
+      const vEl = document.getElementById(`ds-val-${n}`);
+      const sEl = document.getElementById(`ds-sub-${n}`);
+      if (lEl) lEl.textContent = label;
+      if (vEl) { vEl.textContent = val; vEl.style.color = color || 'var(--text)'; }
+      if (sEl) sEl.innerHTML = sub;
+    };
+
+    // IPTV alert
+    const alertEl = document.getElementById('dash-iptv-alert');
+    const iptvPanel = document.getElementById('dash-iptv-panel');
+
+    if (filter === 'general') {
+      const iptvRevenue = iv ? iv.monthlyRevenue || 0 : 0;
+      const totalGain = (p ? p.totals.total_profit : 0) + iptvRevenue;
+      setStat(1, 'Ganancias Totales',    gs(totalGain), '<i class="fas fa-arrow-up"></i> Servicios + Ventas + IPTV', 'var(--accent3)');
+      setStat(2, 'Suscriptores IPTV',   iv ? iv.active : '—', '<i class="fas fa-satellite-dish"></i> Activos', 'var(--accent)');
+      setStat(3, 'Clientes Registrados', p ? p.counts.clients : '—', '<i class="fas fa-users"></i> Total', 'var(--orange)');
+      setStat(4, 'Transacciones',        p ? p.totals.total_transactions : '—', '<i class="fas fa-receipt"></i> Servicios + Ventas', 'var(--gold)');
+
+      // IPTV overdue alert
+      if (alertEl) {
+        const ov = iv ? iv.overdue : 0;
+        alertEl.style.display = ov > 0 ? 'block' : 'none';
+        if (ov > 0) alertEl.innerHTML = `<div class="alert-box"><i class="fas fa-exclamation-triangle"></i><span style="font-size:13px;color:var(--text2)"><strong style="color:var(--red)">${ov} suscripción(es) IPTV vencida(s)</strong> — revisa el <button onclick="IPTVM.showSection('admin-iptvm-dashboard')" style="background:none;border:none;color:var(--accent);cursor:pointer;font-weight:700;font-size:13px;">Dashboard IPTV</button></span></div>`;
+      }
+      if (iptvPanel) iptvPanel.style.display = 'none';
+      this.renderBarChart(p ? p.monthlyData : [], 'Ganancias por Mes (₲)');
+      this.renderRecentPayments(p ? p.recentPayments : []);
+
+    } else if (filter === 'servicios') {
+      const sv = p?.byType?.services;
+      setStat(1, 'Ganancias Servicios', gs(sv?.profit), '<i class="fas fa-tools"></i> Neto acumulado', 'var(--orange)');
+      setStat(2, 'Servicios Realizados', sv?.count ?? '—', '<i class="fas fa-check-circle"></i> Pagados', 'var(--accent3)');
+      setStat(3, 'Pendientes de Cobro',  sv?.pending ?? '—', '<i class="fas fa-clock"></i> Sin pagar', 'var(--red)');
+      setStat(4, 'Este Mes',             gs(p?.monthTotals?.month_profit), '<i class="fas fa-calendar"></i> Todas las categorías', 'var(--accent)');
+      if (alertEl) alertEl.style.display = 'none';
+      if (iptvPanel) iptvPanel.style.display = 'none';
+      this.renderBarChart(sv?.monthlyData || [], 'Ganancias por Mes — Servicios (₲)');
+      this.renderRecentPayments(sv?.recentPayments || []);
+
+    } else if (filter === 'ventas') {
+      const pv = p?.byType?.products;
+      setStat(1, 'Ganancias Ventas',    gs(pv?.profit), '<i class="fas fa-box"></i> Neto acumulado', 'var(--gold)');
+      setStat(2, 'Ventas Realizadas',   pv?.count ?? '—', '<i class="fas fa-shopping-cart"></i> Pagadas', 'var(--accent3)');
+      setStat(3, 'Pendientes de Cobro', pv?.pending ?? '—', '<i class="fas fa-clock"></i> Sin pagar', 'var(--red)');
+      setStat(4, 'Productos en Catálogo', p?.counts?.products ?? '—', '<i class="fas fa-box"></i> Activos', 'var(--accent)');
+      if (alertEl) alertEl.style.display = 'none';
+      if (iptvPanel) iptvPanel.style.display = 'none';
+      this.renderBarChart(pv?.monthlyData || [], 'Ganancias por Mes — Ventas (₲)');
+      this.renderRecentPayments(pv?.recentPayments || []);
+
+    } else if (filter === 'iptv') {
+      const ds = iv?.dueSoon || 0;
+      setStat(1, 'Ingresos Mensuales IPTV', gs(iv?.monthlyRevenue), '<i class="fas fa-satellite-dish"></i> Suscripciones activas', 'var(--accent3)');
+      setStat(2, 'Suscriptores Activos',   iv?.active ?? '—', '<i class="fas fa-users"></i> Activos', 'var(--accent)');
+      setStat(3, 'Vencidas',               iv?.overdue ?? '—', '<i class="fas fa-exclamation-circle"></i> Sin renovar', 'var(--red)');
+      setStat(4, 'Vencen en 5 días',       ds, '<i class="fas fa-clock"></i> Por renovar', 'var(--gold)');
+      if (alertEl) alertEl.style.display = 'none';
+      if (iptvPanel) iptvPanel.style.display = 'block';
+
+      // Provider distribution panel
+      const provEl = document.getElementById('dash-iptv-providers');
+      if (provEl && iv) {
+        const total = iv.total || 1;
+        const lPct = Math.round(((iv.byProvider?.lumix || 0) / total) * 100);
+        const sPct = Math.round(((iv.byProvider?.stlive || 0) / total) * 100);
+        provEl.innerHTML = `
+          <h4 style="margin-bottom:16px"><i class="fas fa-chart-pie" style="color:var(--accent3)"></i> Distribución por Proveedor</h4>
+          <div class="dash-provider-bar">
+            <div class="dash-pbar-row">
+              <div class="dash-pbar-label"><span>Lumix TV</span><span>${iv.byProvider?.lumix || 0} (${lPct}%)</span></div>
+              <div class="dash-pbar-track"><div class="dash-pbar-fill lumix" style="width:${lPct}%"></div></div>
+            </div>
+            <div class="dash-pbar-row">
+              <div class="dash-pbar-label"><span>STlive</span><span>${iv.byProvider?.stlive || 0} (${sPct}%)</span></div>
+              <div class="dash-pbar-track"><div class="dash-pbar-fill stlive" style="width:${sPct}%"></div></div>
+            </div>
+          </div>
+          <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border2);text-align:center;">
+            <div style="font-size:12px;color:var(--text3);margin-bottom:4px;">Total suscripciones</div>
+            <div style="font-family:var(--font-head);font-size:32px;font-weight:900;color:var(--accent)">${iv.total || 0}</div>
+          </div>`;
+      }
+
+      // Overdue list panel
+      const ovEl = document.getElementById('dash-iptv-overdue');
+      if (ovEl && iv) {
+        const ov = iv.overdueList || [];
+        ovEl.innerHTML = `<h4 style="margin-bottom:14px"><i class="fas fa-exclamation-circle" style="color:var(--red)"></i> Vencidas (${ov.length})</h4>` +
+          (ov.length > 0
+            ? `<table class="admin-table"><thead><tr><th>Cliente</th><th>Vencimiento</th><th>Valor</th></tr></thead><tbody>
+                ${ov.map(s => `<tr style="cursor:pointer" onclick="IPTVM.openSubDetail('${s.id}')">
+                  <td><strong>${s.client_name}</strong><br><span style="font-size:11px;color:var(--text3)">${s.client_phone||''}</span></td>
+                  <td style="color:var(--red);font-size:12px">${s.next_payment ? new Date(s.next_payment).toLocaleDateString('es-PY') : '—'}</td>
+                  <td style="color:var(--accent3);font-weight:700">₲ ${Utils.formatGs(s.price)}</td>
+                </tr>`).join('')}
+              </tbody></table>`
+            : '<div style="text-align:center;padding:20px;color:var(--text3);"><i class="fas fa-check-circle" style="font-size:24px;opacity:0.4"></i><p style="margin-top:8px">¡Sin vencidas!</p></div>');
+      }
+
+      // Hide main chart when in IPTV mode (we show panels below instead)
+      const chartCard = document.getElementById('dash-chart-card');
+      if (chartCard) chartCard.style.display = 'none';
+      const recentTitle = document.getElementById('dash-recent-title');
+      if (recentTitle) recentTitle.innerHTML = '<i class="fas fa-satellite-dish"></i> Suscripciones Recientes';
+      // Show recent IPTV subs in right panel
+      const tbody = document.getElementById('dash-payments-tbody');
+      const recent = iv?.recent || [];
+      if (tbody) {
+        tbody.parentElement.replaceWith(Object.assign(document.createElement('div'), {
+          id: 'dash-iptv-recent-list',
+          innerHTML: recent.length > 0
+            ? recent.map(s => `<div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border2);font-size:13px;">
+                <div><div style="font-weight:700">${s.client_name}</div><div style="font-size:11px;color:var(--text3)">${s.provider === 'lumix' ? 'Lumix TV' : 'STlive'}</div></div>
+                <div style="text-align:right"><div style="color:var(--accent3);font-weight:700">₲ ${Utils.formatGs(s.price)}</div></div>
+              </div>`).join('')
+            : '<p style="color:var(--text3);text-align:center;padding:12px">Sin suscripciones</p>'
+        }));
+      }
+      return;
+    }
+
+    // Restore chart card visibility (when leaving iptv tab)
+    const chartCard = document.getElementById('dash-chart-card');
+    if (chartCard) chartCard.style.display = '';
+  },
+
+  renderBarChart(monthlyData, title) {
+    const titleEl = document.getElementById('dash-chart-title');
+    if (titleEl && title) titleEl.textContent = title;
     const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
-    const max = Math.max(...monthlyData.map(m => m.profit), 1);
+    const max = Math.max(...(monthlyData || []).map(m => m.profit), 1);
     const el = document.getElementById('bar-chart');
     if (!el) return;
     el.innerHTML = months.map((m, i) => {
-      const profit = monthlyData[i]?.profit || 0;
+      const profit = monthlyData?.[i]?.profit || 0;
       const h = Math.round((profit / max) * 90);
       return `<div class="chart-bar-wrap">
         <div class="chart-bar" style="height:${Math.max(h, 2)}px;" title="₲ ${Utils.formatGs(profit)}"></div>
@@ -193,13 +357,27 @@ const Admin = {
   },
 
   renderRecentPayments(payments) {
-    const tbody = document.getElementById('dash-payments-tbody');
+    const titleEl = document.getElementById('dash-recent-title');
+    if (titleEl) titleEl.innerHTML = '<i class="fas fa-history"></i> Últimas Actividades';
+
+    // Restore payments table if was replaced by IPTV recent
+    const recentContent = document.getElementById('dash-recent-content');
+    let tbody = document.getElementById('dash-payments-tbody');
+    if (!tbody && recentContent) {
+      const iptvList = document.getElementById('dash-iptv-recent-list');
+      if (iptvList) {
+        const newTable = document.createElement('div');
+        newTable.innerHTML = `<table class="admin-table"><thead><tr><th>Cliente</th><th>Concepto</th><th>Monto</th><th>Estado</th></tr></thead><tbody id="dash-payments-tbody"></tbody></table>`;
+        iptvList.replaceWith(newTable.firstElementChild);
+        tbody = document.getElementById('dash-payments-tbody');
+      }
+    }
     if (!tbody) return;
-    tbody.innerHTML = payments.length ? payments.map(p => `<tr>
+    tbody.innerHTML = (payments || []).length ? payments.map(p => `<tr>
       <td>${p.client_name || '—'}</td>
-      <td>${p.concept}</td>
+      <td style="font-size:12px;">${p.product_name ? '📦 '+p.product_name : (p.service_name || p.concept || '—')}</td>
       <td style="color:var(--accent3);font-weight:700;">₲ ${Utils.formatGs(p.sale_price)}</td>
-      <td><span class="badge badge-${p.status === 'Pagado' ? 'green' : 'orange'}">${p.status}</span></td>
+      <td><span class="badge badge-${p.status === 'Pagado' ? 'green' : p.status === 'Cancelado' ? 'red' : 'orange'}">${p.status}</span></td>
     </tr>`).join('') : '<tr><td colspan="4" style="text-align:center;color:var(--text3);">Sin registros</td></tr>';
   },
 

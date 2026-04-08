@@ -414,48 +414,87 @@
 
       <!-- DASHBOARD -->
       <div class="admin-section show" id="dash-section">
+
+        <!-- Welcome + date -->
         <div class="dash-welcome">
           <div class="dash-welcome-text">
             <h2>¡Bienvenido, Jacson! 👋</h2>
-            <p id="admin-date-display">Hoy es un gran día para crecer tu negocio.</p>
+            <p id="admin-date-display">Cargando...</p>
           </div>
           <div class="dash-welcome-icon">⚡</div>
         </div>
-        <div class="stats-grid">
+
+        <!-- Filter tabs -->
+        <div class="dash-tabs">
+          <button class="dash-tab active" id="dash-tab-general" onclick="Admin.filterDash('general')">
+            <i class="fas fa-th-large"></i> General
+          </button>
+          <button class="dash-tab" id="dash-tab-servicios" onclick="Admin.filterDash('servicios')">
+            <i class="fas fa-tools"></i> Servicios
+          </button>
+          <button class="dash-tab" id="dash-tab-ventas" onclick="Admin.filterDash('ventas')">
+            <i class="fas fa-box"></i> Ventas
+          </button>
+          <button class="dash-tab" id="dash-tab-iptv" onclick="Admin.filterDash('iptv')">
+            <i class="fas fa-satellite-dish"></i> IPTV
+          </button>
+        </div>
+
+        <!-- Dynamic stats -->
+        <div class="stats-grid" id="dash-stats-grid">
           <div class="stat-card">
-            <div class="stat-card-label">Ganancias Totales</div>
-            <div class="stat-card-value" id="dash-total-gs" style="color:var(--accent3);">₲ 0</div>
-            <div class="stat-card-change change-up"><i class="fas fa-arrow-up"></i> Total acumulado</div>
+            <div class="stat-card-label" id="ds-label-1">Ganancias Totales</div>
+            <div class="stat-card-value" id="ds-val-1" style="color:var(--accent3);">₲ 0</div>
+            <div class="stat-card-change" id="ds-sub-1"><i class="fas fa-arrow-up"></i> Total acumulado</div>
           </div>
           <div class="stat-card">
-            <div class="stat-card-label">Clientes Registrados</div>
-            <div class="stat-card-value" id="dash-clients-count" style="color:var(--accent);">0</div>
-            <div class="stat-card-change"><i class="fas fa-users"></i> Total</div>
+            <div class="stat-card-label" id="ds-label-2">Suscriptores IPTV</div>
+            <div class="stat-card-value" id="ds-val-2" style="color:var(--accent);">0</div>
+            <div class="stat-card-change" id="ds-sub-2"><i class="fas fa-satellite-dish"></i> Activos</div>
           </div>
           <div class="stat-card">
-            <div class="stat-card-label">Servicios Realizados</div>
-            <div class="stat-card-value" id="dash-services-count" style="color:var(--orange);">0</div>
-            <div class="stat-card-change"><i class="fas fa-check-circle"></i> Registros</div>
+            <div class="stat-card-label" id="ds-label-3">Clientes Registrados</div>
+            <div class="stat-card-value" id="ds-val-3" style="color:var(--orange);">0</div>
+            <div class="stat-card-change" id="ds-sub-3"><i class="fas fa-users"></i> Total</div>
           </div>
           <div class="stat-card">
-            <div class="stat-card-label">Productos en Catálogo</div>
-            <div class="stat-card-value" id="dash-products-count" style="color:var(--gold);">0</div>
-            <div class="stat-card-change"><i class="fas fa-box"></i> Activos</div>
+            <div class="stat-card-label" id="ds-label-4">Transacciones</div>
+            <div class="stat-card-value" id="ds-val-4" style="color:var(--gold);">0</div>
+            <div class="stat-card-change" id="ds-sub-4"><i class="fas fa-receipt"></i> Registros</div>
           </div>
         </div>
+
+        <!-- IPTV alert (shown only in general/iptv views) -->
+        <div id="dash-iptv-alert" style="display:none;margin-bottom:16px;"></div>
+
+        <!-- Main content area -->
         <div class="admin-two-col">
-          <div class="admin-panel-card">
-            <h4><i class="fas fa-chart-bar"></i> Ganancias por Mes (₲)</h4>
+          <div class="admin-panel-card" id="dash-chart-card">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+              <h4 style="margin:0"><i class="fas fa-chart-bar"></i> <span id="dash-chart-title">Ganancias por Mes (₲)</span></h4>
+              <select id="dash-year-select" onchange="Admin.loadDashboard()" style="background:var(--surface);border:1px solid var(--border2);color:var(--text);padding:4px 8px;border-radius:6px;font-size:12px;"></select>
+            </div>
             <div class="chart-bar-container" id="bar-chart"></div>
           </div>
           <div class="admin-panel-card">
-            <h4><i class="fas fa-history"></i> Últimos Pagos</h4>
-            <table class="admin-table">
-              <thead><tr><th>Cliente</th><th>Concepto</th><th>Monto</th><th>Estado</th></tr></thead>
-              <tbody id="dash-payments-tbody"><tr><td colspan="4" style="text-align:center;color:var(--text3);">Sin registros</td></tr></tbody>
-            </table>
+            <h4 id="dash-recent-title"><i class="fas fa-history"></i> Últimas Actividades</h4>
+            <div id="dash-recent-content">
+              <table class="admin-table">
+                <thead><tr><th>Cliente</th><th>Concepto</th><th>Monto</th><th>Estado</th></tr></thead>
+                <tbody id="dash-payments-tbody"><tr><td colspan="4" style="text-align:center;color:var(--text3);">Sin registros</td></tr></tbody>
+              </table>
+            </div>
           </div>
         </div>
+
+        <!-- IPTV breakdown panel (only in iptv tab) -->
+        <div id="dash-iptv-panel" style="display:none;">
+          <div class="admin-two-col">
+            <div class="admin-panel-card" id="dash-iptv-providers"></div>
+            <div class="admin-panel-card" id="dash-iptv-overdue"></div>
+          </div>
+        </div>
+
       </div>
 
       <!-- CLIENTES -->
