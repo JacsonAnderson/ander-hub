@@ -45,6 +45,10 @@ const API = {
     login(username, password) { return API.post('/auth/login', { username, password }); },
     me() { return API.get('/auth/me'); },
     changePassword(currentPassword, newPassword) { return API.put('/auth/password', { currentPassword, newPassword }); },
+    listUsers() { return API.get('/auth/users'); },
+    createUser(data) { return API.post('/auth/users', data); },
+    updateUser(id, data) { return API.put(`/auth/users/${id}`, data); },
+    deleteUser(id) { return API.del(`/auth/users/${id}`); },
   },
 
   // ===== PRODUCTS =====
@@ -179,5 +183,21 @@ const API = {
   config: {
     get() { return API.get('/config'); },
     update(data) { return API.put('/config', data); },
+  },
+
+  // ===== IPTV MANAGEMENT =====
+  iptvm: {
+    dashboard() { return API.get('/iptvm/dashboard'); },
+    subscriptions(queryString) { return API.get(`/iptvm/subscriptions${queryString ? '?' + queryString : ''}`); },
+    getSubscription(id) { return API.get(`/iptvm/subscriptions/${id}`); },
+    createSubscription(data) { return API.post('/iptvm/subscriptions', data); },
+    updateSubscription(id, data) { return API.put(`/iptvm/subscriptions/${id}`, data); },
+    deleteSubscription(id) { return API.del(`/iptvm/subscriptions/${id}`); },
+    registerPayment(id, data) { return API.post(`/iptvm/subscriptions/${id}/pay`, data); },
+    accounts() { return API.get('/iptvm/accounts'); },
+    createAccount(data) { return API.post('/iptvm/accounts', data); },
+    updateAccount(id, data) { return API.put(`/iptvm/accounts/${id}`, data); },
+    deleteAccount(id) { return API.del(`/iptvm/accounts/${id}`); },
+    resellers() { return API.get('/iptvm/resellers'); },
   },
 };

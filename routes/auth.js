@@ -56,6 +56,97 @@ router.get('/me', authenticate, async (req, res) => {
   }
 });
 
+// GET /api/auth/users - Listar usuários (admin only)
+router.get('/users', authenticate, async (req, res) => {
+  try {
+    if (req.user.role !== 'admin') return res.status(403).json({ error: 'Acesso negado' });
+    const db = getDb();
+    const snap = await db.collection('users').get();
+    const users = snap.docs.map(d => {
+      const { password, ...safe } = { id: d.id, ...d.data() };
+      return safe;
+    }).filter(u => u.role !== 'admin');
+    res.json(users);
+  } catch (err) {
+    res.status(500).json({ error: 'Erro ao listar usuários', details: err.message });
+  }
+});
+
+// POST /api/auth/users - Criar usuário (admin only)
+router.post('/users', authenticate, async (req, res) => {
+  try {
+    if (req.user.role !== 'admin') return res.status(403).json({ error: 'Acesso negado' });
+    const { username, name, password, role, email, phone } = req.body;
+    if (!username || !name || !password) {
+      return res.status(400).json({ error: 'Usuário, nome e senha são obrigatórios' });
+    }
+    if (!['reseller', 'client'].includes(role || 'client')) {
+      return res.status(400).json({ error: 'Role inválido' });
+    }
+    const db = getDb();
+    // Check username uniqueness
+    const existing = await db.collection('users').where('username', '==', username).limit(1).get();
+    if (!existing.empty) return res.status(409).json({ error: 'Nome de usuário já existe' });
+
+    const hash = bcrypt.hashSync(password, 10);
+    const now = new Date().toISOString();
+    const ref = await db.collection('users').add({
+      username, name, password: hash,
+      role: role || 'client',
+      email: email || '',
+      phone: phone || '',
+      active: true,
+      created_at: now,
+      updated_at: now
+    });
+    const doc = await ref.get();
+    const { password: _, ...safe } = { id: doc.id, ...doc.data() };
+    res.status(201).json(safe);
+  } catch (err) {
+    res.status(500).json({ error: 'Erro ao criar usuário', details: err.message });
+  }
+});
+
+// PUT /api/auth/users/:id - Atualizar usuário (admin only)
+router.put('/users/:id', authenticate, async (req, res) => {
+  try {
+    if (req.user.role !== 'admin') return res.status(403).json({ error: 'Acesso negado' });
+    const db = getDb();
+    const ref = db.collection('users').doc(req.params.id);
+    if (!(await ref.get()).exists) return res.status(404).json({ error: 'Não encontrado' });
+
+    const updates = { updated_at: new Date().toISOString() };
+    ['name', 'email', 'phone', 'role', 'active'].forEach(f => {
+      if (req.body[f] !== undefined) updates[f] = req.body[f];
+    });
+    if (req.body.password) {
+      updates.password = bcrypt.hashSync(req.body.password, 10);
+    }
+    await ref.update(updates);
+    const doc = await ref.get();
+    const { password: _, ...safe } = { id: doc.id, ...doc.data() };
+    res.json(safe);
+  } catch (err) {
+    res.status(500).json({ error: 'Erro ao atualizar usuário', details: err.message });
+  }
+});
+
+// DELETE /api/auth/users/:id - Remover usuário (admin only)
+router.delete('/users/:id', authenticate, async (req, res) => {
+  try {
+    if (req.user.role !== 'admin') return res.status(403).json({ error: 'Acesso negado' });
+    const db = getDb();
+    const ref = db.collection('users').doc(req.params.id);
+    const doc = await ref.get();
+    if (!doc.exists) return res.status(404).json({ error: 'Não encontrado' });
+    if (doc.data().role === 'admin') return res.status(403).json({ error: 'Não é possível remover admin' });
+    await ref.delete();
+    res.json({ message: 'Usuário removido' });
+  } catch (err) {
+    res.status(500).json({ error: 'Erro ao remover usuário', details: err.message });
+  }
+});
+
 // PUT /api/auth/password - Cambiar contraseña
 router.put('/password', authenticate, async (req, res) => {
   try {

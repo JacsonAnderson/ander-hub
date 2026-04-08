@@ -2,6 +2,7 @@
 const Auth = {
   currentUser: null,
   isAdmin: false,
+  isReseller: false,
 
   init() {
     const savedUser = localStorage.getItem('ander_user');
@@ -9,7 +10,9 @@ const Auth = {
       try {
         this.currentUser = JSON.parse(savedUser);
         this.isAdmin = this.currentUser.role === 'admin';
+        this.isReseller = this.currentUser.role === 'reseller';
         this.updateUI();
+        if (this.isReseller) this._openResellerPanel();
       } catch { this.logout(); }
     }
     window.addEventListener('auth:expired', () => this.logout());
@@ -26,13 +29,15 @@ const Auth = {
       API.setToken(data.token);
       this.currentUser = data.user;
       this.isAdmin = data.user.role === 'admin';
+      this.isReseller = data.user.role === 'reseller';
       localStorage.setItem('ander_user', JSON.stringify(data.user));
       Utils.closeModal('modal-login');
       this.updateUI();
-      Utils.toast(`¡Bienvenido, ${data.user.name}!`, 'success');
+      Utils.toast(`Bem-vindo, ${data.user.name}!`, 'success');
       if (this.isAdmin) {
-        // Reload admin data
         Admin.loadDashboard();
+      } else if (this.isReseller) {
+        this._openResellerPanel();
       }
     } catch (err) {
       errEl.style.display = 'block';
@@ -43,10 +48,33 @@ const Auth = {
     API.setToken(null);
     this.currentUser = null;
     this.isAdmin = false;
+    this.isReseller = false;
     localStorage.removeItem('ander_user');
     localStorage.removeItem('ander_token');
+    // Close panels
+    const adminPanel = document.getElementById('admin-panel');
+    if (adminPanel) adminPanel.classList.remove('show');
+    this._closeResellerPanel();
     this.updateUI();
-    Utils.toast('Sesión cerrada correctamente.', 'success');
+    Utils.toast('Sessão encerrada.', 'success');
+  },
+
+  _openResellerPanel() {
+    const panel = document.getElementById('reseller-panel');
+    if (!panel) return;
+    panel.classList.add('show');
+    // Set name in panel
+    const nameEl = document.getElementById('reseller-topbar-name');
+    const userEl = document.getElementById('reseller-panel-username');
+    if (nameEl) nameEl.textContent = this.currentUser?.name || '';
+    if (userEl) userEl.textContent = this.currentUser?.name || '';
+    // Init IPTVM for reseller
+    IPTVM.init();
+  },
+
+  _closeResellerPanel() {
+    const panel = document.getElementById('reseller-panel');
+    if (panel) panel.classList.remove('show');
   },
 
   updateUI() {
@@ -58,7 +86,7 @@ const Auth = {
 
     if (btnLogin) btnLogin.style.display = loggedIn ? 'none' : 'flex';
     if (userInfo) userInfo.classList.toggle('show', loggedIn);
-    if (btnOrders) btnOrders.classList.toggle('show', loggedIn && !this.isAdmin);
+    if (btnOrders) btnOrders.classList.toggle('show', loggedIn && !this.isAdmin && !this.isReseller);
     if (btnAdmin) btnAdmin.classList.toggle('show', this.isAdmin);
 
     if (loggedIn) {
@@ -67,7 +95,7 @@ const Auth = {
       const roleEl = document.getElementById('user-display-role');
       if (avatar) avatar.textContent = this.currentUser.name[0].toUpperCase();
       if (nameEl) nameEl.textContent = this.currentUser.name;
-      if (roleEl) roleEl.textContent = this.isAdmin ? 'Administrador' : 'Cliente';
+      if (roleEl) roleEl.textContent = this.isAdmin ? 'Administrador' : this.isReseller ? 'Revendedor' : 'Cliente';
     }
   },
 

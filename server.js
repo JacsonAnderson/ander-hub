@@ -27,6 +27,7 @@ app.use('/api/social', require('./routes/social'));
 app.use('/api/clients', require('./routes/clients'));
 app.use('/api/payments', require('./routes/payments'));
 app.use('/api/config', require('./routes/config'));
+app.use('/api/iptvm', require('./routes/iptv-management'));
 
 
 // ==================== HEALTH CHECK ====================
