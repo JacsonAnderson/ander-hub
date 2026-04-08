@@ -12,7 +12,8 @@ const Auth = {
         this.isAdmin = this.currentUser.role === 'admin';
         this.isReseller = this.currentUser.role === 'reseller';
         this.updateUI();
-        if (this.isReseller) this._openResellerPanel();
+        if (this.isAdmin) Admin.open();
+        else if (this.isReseller) this._openResellerPanel();
       } catch { this.logout(); }
     }
     window.addEventListener('auth:expired', () => this.logout());
@@ -33,9 +34,9 @@ const Auth = {
       localStorage.setItem('ander_user', JSON.stringify(data.user));
       Utils.closeModal('modal-login');
       this.updateUI();
-      Utils.toast(`Bem-vindo, ${data.user.name}!`, 'success');
+      Utils.toast(`¡Bienvenido, ${data.user.name}!`, 'success');
       if (this.isAdmin) {
-        Admin.loadDashboard();
+        Admin.open();
       } else if (this.isReseller) {
         this._openResellerPanel();
       }

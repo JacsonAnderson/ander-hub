@@ -150,7 +150,9 @@ const Admin = {
     };
     const topbar = document.getElementById('admin-topbar-title');
     if (topbar) topbar.textContent = titles[name] || name;
-    this.closeSidebar(); // fecha sidebar ao navegar no mobile
+    this.closeSidebar();
+    // Reload dashboard data every time the section is shown
+    if (name === 'dash') this.loadDashboard();
   },
 
   // ===== DASHBOARD =====
@@ -168,6 +170,12 @@ const Admin = {
       }
     }
     const year = yearSel ? yearSel.value : new Date().getFullYear();
+
+    // Show loading state on stat cards
+    [1,2,3,4].forEach(n => {
+      const v = document.getElementById(`ds-val-${n}`);
+      if (v) { v.innerHTML = '<i class="fas fa-spinner fa-spin" style="font-size:16px;opacity:0.4"></i>'; }
+    });
 
     try {
       // Fetch both dashboards in parallel
