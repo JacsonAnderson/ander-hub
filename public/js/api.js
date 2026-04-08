@@ -195,9 +195,11 @@ const API = {
     deleteSubscription(id) { return API.del(`/iptvm/subscriptions/${id}`); },
     registerPayment(id, data) { return API.post(`/iptvm/subscriptions/${id}/pay`, data); },
     accounts() { return API.get('/iptvm/accounts'); },
+    accountSubscribers(id) { return API.get(`/iptvm/accounts/${id}/subscribers`); },
     createAccount(data) { return API.post('/iptvm/accounts', data); },
     updateAccount(id, data) { return API.put(`/iptvm/accounts/${id}`, data); },
     deleteAccount(id) { return API.del(`/iptvm/accounts/${id}`); },
     resellers() { return API.get('/iptvm/resellers'); },
+    resellerSubscriptions(id) { return API.get(`/iptvm/resellers/${id}/subscriptions`); },
   },
 };

@@ -265,16 +265,13 @@ const IPTVM = {
 
   // ── Sub Form (create / edit) ───────────────────────────────
 
-  openSubForm(id = null) {
+  _cachedAccounts: [],
+  _cachedResellers: [],
+
+  async openSubForm(id = null) {
     this._editingSubId = id;
     const sub = id ? this._subs.find(s => s.id === id) : null;
     const isAdm = Auth.isAdmin;
-
-    const providerOptions = `
-      <option value="lumix" ${sub?.provider === 'lumix' ? 'selected' : ''}>Lumix TV (1 crédito = 4 portas)</option>
-      <option value="stlive" ${sub?.provider === 'stlive' ? 'selected' : ''}>STlive (1 crédito = 1 tela)</option>`;
-
-    const portOptions = [1,2,3,4].map(n => `<option value="${n}" ${sub?.port == n ? 'selected' : ''}>Porta ${n}</option>`).join('');
 
     Utils.openModal('modal-iptvm-sub-form');
     const title = document.getElementById('modal-iptvm-sub-title');
@@ -282,6 +279,64 @@ const IPTVM = {
 
     const body = document.getElementById('modal-iptvm-sub-body');
     if (!body) return;
+    body.innerHTML = `<div class="iptvm-empty"><i class="fas fa-spinner fa-spin"></i><p>Carregando...</p></div>`;
+
+    // Load accounts (and resellers for admin)
+    try {
+      if (isAdm) {
+        const [accs, users] = await Promise.all([API.iptvm.accounts(), API.auth.listUsers()]);
+        this._cachedAccounts = accs;
+        this._cachedResellers = users.filter(u => u.role === 'reseller');
+      }
+    } catch (e) { console.error('Erro ao carregar dados do form', e); }
+
+    const portOptions = [1,2,3,4].map(n => `<option value="${n}" ${sub?.port == n ? 'selected' : ''}>Porta ${n}</option>`).join('');
+
+    // Account selector (admin) — grouped by provider
+    let accountSelectorHtml = '';
+    if (isAdm) {
+      const lumixAccs = this._cachedAccounts.filter(a => a.provider === 'lumix');
+      const stliveAccs = this._cachedAccounts.filter(a => a.provider === 'stlive');
+      accountSelectorHtml = `
+        <div class="iptvm-form-section-title">Conta do Provedor</div>
+        <div class="form-row">
+          <div class="form-group" style="grid-column:1/-1">
+            <label>Selecionar Conta *</label>
+            <select id="isub-account-id" onchange="IPTVM._onAccountChange(this.value)">
+              <option value="">— Selecione uma conta —</option>
+              ${lumixAccs.length ? `<optgroup label="Lumix TV">
+                ${lumixAccs.map(a => `<option value="${a.id}" ${sub?.account_id === a.id ? 'selected' : ''}>${a.account_user} (${a.max_ports || 4} portas)</option>`).join('')}
+              </optgroup>` : ''}
+              ${stliveAccs.length ? `<optgroup label="STlive">
+                ${stliveAccs.map(a => `<option value="${a.id}" ${sub?.account_id === a.id ? 'selected' : ''}>${a.account_user}</option>`).join('')}
+              </optgroup>` : ''}
+            </select>
+          </div>
+        </div>
+        <div class="form-row" id="isub-port-group" style="${sub?.provider !== 'lumix' ? 'display:none' : ''}">
+          <div class="form-group">
+            <label>Porta (Lumix) *</label>
+            <select id="isub-port"><option value="">— Selecione a porta —</option>${portOptions}</select>
+          </div>
+          <div class="form-group" id="isub-port-status"></div>
+        </div>`;
+    }
+
+    // Reseller selector (admin only, create mode)
+    let resellerSelectorHtml = '';
+    if (isAdm) {
+      resellerSelectorHtml = `
+        <div class="iptvm-form-section-title">Revendedor</div>
+        <div class="form-row">
+          <div class="form-group" style="grid-column:1/-1">
+            <label>Atribuir a</label>
+            <select id="isub-reseller-id">
+              <option value="">— Minha conta (admin) —</option>
+              ${this._cachedResellers.map(r => `<option value="${r.id}" ${sub?.reseller_id === r.id ? 'selected' : ''}>${r.name} (@${r.username})</option>`).join('')}
+            </select>
+          </div>
+        </div>`;
+    }
 
     body.innerHTML = `<form class="iptvm-form" id="iptvm-sub-form" onsubmit="return false">
       <div class="form-row">
@@ -294,28 +349,7 @@ const IPTVM = {
           <input type="text" id="isub-phone" value="${sub?.client_phone || ''}" placeholder="+595 9...">
         </div>
       </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Provedor *</label>
-          <select id="isub-provider" onchange="IPTVM._togglePortField(this.value)">${providerOptions}</select>
-        </div>
-        <div class="form-group" id="isub-port-group" style="${(sub?.provider !== 'lumix' && !sub) ? 'display:none' : ''}">
-          <label>Porta (Lumix)</label>
-          <select id="isub-port"><option value="">— Nenhuma —</option>${portOptions}</select>
-        </div>
-      </div>
-      ${isAdm ? `
-      <div class="iptvm-form-section-title">Dados da Conta (Admin)</div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Usuário da Conta</label>
-          <input type="text" id="isub-acc-user" value="${sub?.account_user || ''}" placeholder="login@provedor.com">
-        </div>
-        <div class="form-group">
-          <label>Senha da Conta</label>
-          <input type="text" id="isub-acc-pass" value="${sub?.account_pass || ''}" placeholder="senha">
-        </div>
-      </div>` : ''}
+      ${accountSelectorHtml}
       <div class="iptvm-form-section-title">Dispositivo e Pagamento</div>
       <div class="form-row">
         <div class="form-group">
@@ -340,41 +374,63 @@ const IPTVM = {
           </select>
         </div>` : '<div class="form-group"></div>'}
       </div>
-      ${isAdm && !id ? `
-      <div class="iptvm-form-section-title">Revendedor</div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>ID do Revendedor</label>
-          <input type="text" id="isub-reseller-id" placeholder="Deixe vazio para você mesmo">
-        </div>
-        <div class="form-group">
-          <label>Nome do Revendedor</label>
-          <input type="text" id="isub-reseller-name" placeholder="Nome">
-        </div>
-      </div>` : ''}
+      ${resellerSelectorHtml}
       <div class="form-group">
         <label>Observações</label>
         <textarea id="isub-notes" placeholder="Notas internas...">${sub?.notes || ''}</textarea>
       </div>
     </form>`;
 
-    // Set initial port field visibility
-    this._togglePortField(sub?.provider || 'lumix');
+    // Trigger account change to show port info if editing
+    if (sub?.account_id) this._onAccountChange(sub.account_id, sub.port);
   },
 
-  _togglePortField(provider) {
-    const group = document.getElementById('isub-port-group');
-    if (group) group.style.display = provider === 'lumix' ? '' : 'none';
+  async _onAccountChange(accountId, selectedPort = null) {
+    const portGroup = document.getElementById('isub-port-group');
+    const portStatus = document.getElementById('isub-port-status');
+    if (!portGroup) return;
+
+    if (!accountId) { portGroup.style.display = 'none'; return; }
+
+    const acc = this._cachedAccounts.find(a => a.id === accountId);
+    if (!acc) return;
+
+    if (acc.provider === 'lumix') {
+      portGroup.style.display = '';
+      // Check which ports are already occupied
+      if (portStatus) {
+        try {
+          const data = await API.iptvm.accountSubscribers(accountId);
+          if (data.ports) {
+            const portSel = document.getElementById('isub-port');
+            if (portSel) {
+              portSel.innerHTML = '<option value="">— Selecione a porta —</option>' +
+                data.ports.map(p => {
+                  const occupied = p.sub && p.sub.id !== this._editingSubId;
+                  return `<option value="${p.port}" ${occupied ? 'disabled' : ''} ${selectedPort == p.port ? 'selected' : ''}>
+                    Porta ${p.port} ${occupied ? `— ${p.sub.client_name} (ocupada)` : '— Livre'}
+                  </option>`;
+                }).join('');
+            }
+            portStatus.innerHTML = `<div style="font-size:11px;color:var(--text3);padding-top:20px;">
+              ${data.ports.filter(p => p.sub).length}/${data.ports.length} portas ocupadas
+            </div>`;
+          }
+        } catch (e) { /* ignore */ }
+      }
+    } else {
+      portGroup.style.display = 'none';
+    }
   },
 
   async saveSub() {
     const isAdm = Auth.isAdmin;
-    const provider = document.getElementById('isub-provider')?.value;
+    const accountId = document.getElementById('isub-account-id')?.value;
+    const acc = accountId ? this._cachedAccounts.find(a => a.id === accountId) : null;
+
     const data = {
       client_name: document.getElementById('isub-name')?.value?.trim(),
       client_phone: document.getElementById('isub-phone')?.value?.trim(),
-      provider,
-      port: provider === 'lumix' ? (document.getElementById('isub-port')?.value || null) : null,
       device_name: document.getElementById('isub-device')?.value?.trim(),
       price: document.getElementById('isub-price')?.value,
       next_payment: document.getElementById('isub-next-payment')?.value,
@@ -382,18 +438,27 @@ const IPTVM = {
     };
 
     if (isAdm) {
-      data.account_user = document.getElementById('isub-acc-user')?.value?.trim();
-      data.account_pass = document.getElementById('isub-acc-pass')?.value?.trim();
+      if (accountId) {
+        data.account_id = accountId;
+        data.provider = acc?.provider || '';
+        if (acc?.provider === 'lumix') {
+          data.port = document.getElementById('isub-port')?.value || null;
+        }
+      }
       const statusEl = document.getElementById('isub-status');
       if (statusEl) data.status = statusEl.value;
       const rId = document.getElementById('isub-reseller-id')?.value?.trim();
-      const rName = document.getElementById('isub-reseller-name')?.value?.trim();
       if (rId) data.reseller_id = rId;
-      if (rName) data.reseller_name = rName;
+    } else {
+      // Reseller: provider is inherited from context (no account selector)
+      data.provider = 'stlive'; // default, resellers don't pick provider
     }
 
-    if (!data.client_name || !data.provider) {
-      Utils.toast('Nome e provedor são obrigatórios', 'error'); return;
+    if (!data.client_name) {
+      Utils.toast('Nome do cliente é obrigatório', 'error'); return;
+    }
+    if (isAdm && !this._editingSubId && !accountId) {
+      Utils.toast('Selecione uma conta de provedor', 'error'); return;
     }
 
     try {
@@ -408,7 +473,7 @@ const IPTVM = {
       this.loadSubscriptions();
       this.loadDashboard();
     } catch (err) {
-      Utils.toast('Erro ao salvar assinatura', 'error');
+      Utils.toast(err.message || 'Erro ao salvar assinatura', 'error');
       console.error(err);
     }
   },
@@ -591,20 +656,94 @@ const IPTVM = {
       }
 
       el.innerHTML = accounts.map(a => `
-        <div class="account-card">
+        <div class="account-card" onclick="IPTVM.openAccountDetail('${a.id}')" style="cursor:pointer;" title="Clique para ver assinantes">
           <div class="account-provider-badge ${a.provider}">${a.provider === 'lumix' ? 'LMX' : 'STL'}</div>
           <div class="account-info">
             <div class="account-user">${a.account_user}</div>
             <div class="account-pass">${a.account_pass || '••••••••'}</div>
-            <div class="account-meta">${a.provider === 'lumix' ? `${a.max_ports} portas` : '1 tela'} · Custo: ${this._fmtPrice(a.cost_price)}</div>
+            <div class="account-meta">${a.provider === 'lumix' ? `${a.max_ports || 4} portas` : '1 tela'} · Custo: ${this._fmtPrice(a.cost_price)}</div>
           </div>
-          <div class="account-actions">
+          <div class="account-actions" onclick="event.stopPropagation()">
             <button class="btn-edit" onclick="IPTVM.openAccountForm('${a.id}')"><i class="fas fa-edit"></i></button>
             <button class="btn-del" onclick="IPTVM.deleteAccount('${a.id}')"><i class="fas fa-trash"></i></button>
           </div>
         </div>`).join('');
     } catch (err) {
       el.innerHTML = `<div class="iptvm-empty"><i class="fas fa-exclamation-triangle"></i><p>Erro ao carregar contas</p></div>`;
+    }
+  },
+
+  async openAccountDetail(id) {
+    Utils.openModal('modal-iptvm-account-detail');
+    const body = document.getElementById('modal-iptvm-account-detail-body');
+    if (!body) return;
+    body.innerHTML = `<div class="iptvm-empty"><i class="fas fa-spinner fa-spin"></i><p>Carregando...</p></div>`;
+
+    try {
+      const data = await API.iptvm.accountSubscribers(id);
+      const { account, ports, subs, total } = data;
+      const isLumix = account.provider === 'lumix';
+
+      let slotsHtml = '';
+      if (isLumix && ports) {
+        slotsHtml = `
+          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:20px;">
+            ${ports.map(p => `
+              <div style="background:var(--surface);border:1px solid ${p.sub ? 'rgba(0,230,118,0.3)' : 'var(--border2)'};border-radius:var(--radius2);padding:16px;">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+                  <span class="port-dot">${p.port}</span>
+                  <span style="font-size:12px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1px;">Porta ${p.port}</span>
+                  <span style="margin-left:auto">${p.sub ? '<span class="iptvm-badge active">Ocupada</span>' : '<span class="iptvm-badge inactive">Livre</span>'}</span>
+                </div>
+                ${p.sub ? `
+                  <div style="font-size:13px;font-weight:700;color:var(--text)">${p.sub.client_name}</div>
+                  <div style="font-size:11px;color:var(--text3);margin-top:2px;">${p.sub.client_phone || ''}</div>
+                  <div style="font-size:11px;color:var(--text3);margin-top:4px;">${p.sub.device_name || ''}</div>
+                  <div style="display:flex;justify-content:space-between;margin-top:8px;align-items:center;">
+                    <span style="font-size:12px;color:var(--accent3);font-weight:700;">${this._fmtPrice(p.sub.price)}</span>
+                    ${this._payStatusBadge(p.sub.payment_status)}
+                  </div>
+                  <button style="margin-top:10px;width:100%;padding:6px;background:rgba(0,176,255,0.1);border:1px solid rgba(0,176,255,0.2);color:var(--accent);border-radius:8px;cursor:pointer;font-size:11px;font-weight:700;" onclick="IPTVM.openSubDetail('${p.sub.id}')">
+                    <i class="fas fa-eye"></i> Ver detalhes
+                  </button>
+                ` : `<div style="font-size:12px;color:var(--text3);text-align:center;padding:10px 0;opacity:0.5;">Nenhum cliente</div>`}
+              </div>`).join('')}
+          </div>`;
+      } else if (subs) {
+        // STlive — list format
+        slotsHtml = subs.length > 0 ? `
+          <div class="iptvm-table-wrap" style="margin-bottom:20px;">
+            <table class="iptvm-table">
+              <thead><tr><th>Cliente</th><th>Dispositivo</th><th>Valor</th><th>Status</th></tr></thead>
+              <tbody>
+                ${subs.map(s => `
+                  <tr onclick="IPTVM.openSubDetail('${s.id}')" style="cursor:pointer;">
+                    <td><div class="iptvm-client-cell"><span class="iptvm-client-name">${s.client_name}</span><span class="iptvm-client-phone">${s.client_phone || ''}</span></div></td>
+                    <td style="font-size:12px">${s.device_name || '—'}</td>
+                    <td style="color:var(--accent3);font-weight:700">${this._fmtPrice(s.price)}</td>
+                    <td>${this._payStatusBadge(s.payment_status)}</td>
+                  </tr>`).join('')}
+              </tbody>
+            </table>
+          </div>` : `<div class="iptvm-empty"><i class="fas fa-user-slash"></i><p>Nenhum cliente nesta conta</p></div>`;
+      }
+
+      body.innerHTML = `
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;">
+          <div class="account-provider-badge ${account.provider}" style="width:56px;height:56px;font-size:13px;">
+            ${account.provider === 'lumix' ? 'LMX' : 'STL'}
+          </div>
+          <div>
+            <div style="font-size:17px;font-weight:800;">${account.account_user}</div>
+            <div style="font-size:12px;color:var(--text3);margin-top:2px;">${isLumix ? `Lumix TV · ${account.max_ports || 4} portas` : 'STlive · 1 tela'}</div>
+            <div style="font-size:12px;color:var(--text3);margin-top:2px;">Custo: ${this._fmtPrice(account.cost_price)} · ${total} cliente(s) ativo(s)</div>
+          </div>
+          <button class="btn-edit" style="margin-left:auto" onclick="IPTVM.openAccountForm('${account.id}')"><i class="fas fa-edit"></i></button>
+        </div>
+        ${slotsHtml}`;
+    } catch (err) {
+      body.innerHTML = `<div class="iptvm-empty"><i class="fas fa-exclamation-triangle"></i><p>Erro ao carregar dados da conta</p></div>`;
+      console.error(err);
     }
   },
 
@@ -734,16 +873,16 @@ const IPTVM = {
             <thead><tr><th>Nome</th><th>Usuário</th><th>Telefone</th><th>Status</th><th>Criado em</th><th></th></tr></thead>
             <tbody>
               ${resellers.map(r => `
-                <tr>
+                <tr style="cursor:pointer;" onclick="IPTVM.openResellerDetail('${r.id}','${(r.name||'').replace(/'/g,"\\'")}')">
                   <td style="font-weight:700">${r.name || '—'}</td>
                   <td style="font-size:12px;color:var(--text3);font-family:monospace">${r.username || '—'}</td>
                   <td style="font-size:12px;color:var(--text3)">${r.phone || '—'}</td>
                   <td><span class="iptvm-badge ${r.active !== false ? 'active' : 'inactive'}">${r.active !== false ? 'Ativo' : 'Inativo'}</span></td>
                   <td style="font-size:12px;color:var(--text3)">${this._fmtDate(r.created_at)}</td>
-                  <td>
+                  <td onclick="event.stopPropagation()">
                     <div class="iptvm-row-actions">
                       <button class="btn-edit" title="Editar" onclick="IPTVM.openResellerForm('${r.id}')"><i class="fas fa-edit"></i></button>
-                      <button class="btn-del" title="Excluir" onclick="IPTVM.deleteReseller('${r.id}','${r.name}')"><i class="fas fa-trash"></i></button>
+                      <button class="btn-del" title="Excluir" onclick="IPTVM.deleteReseller('${r.id}','${(r.name||'').replace(/'/g,"\\'")}')"><i class="fas fa-trash"></i></button>
                     </div>
                   </td>
                 </tr>`).join('')}
@@ -822,6 +961,54 @@ const IPTVM = {
       this.loadResellers();
     } catch (err) {
       Utils.toast(err.message || 'Erro ao salvar', 'error');
+      console.error(err);
+    }
+  },
+
+  async openResellerDetail(id, name) {
+    Utils.openModal('modal-iptvm-reseller-detail');
+    const body = document.getElementById('modal-iptvm-reseller-detail-body');
+    const titleEl = document.getElementById('modal-iptvm-reseller-detail-title');
+    if (titleEl) titleEl.textContent = name || 'Revendedor';
+    if (!body) return;
+    body.innerHTML = `<div class="iptvm-empty"><i class="fas fa-spinner fa-spin"></i><p>Carregando...</p></div>`;
+
+    try {
+      const data = await API.iptvm.resellerSubscriptions(id);
+      const { subs, stats } = data;
+
+      const subsHtml = subs.length > 0 ? `
+        <div class="iptvm-table-wrap">
+          <table class="iptvm-table">
+            <thead><tr><th>Cliente</th><th>Provedor</th><th>Dispositivo</th><th>Vencimento</th><th>Valor</th><th>Status</th></tr></thead>
+            <tbody>
+              ${subs.map(s => `
+                <tr onclick="Utils.closeModal('modal-iptvm-reseller-detail');IPTVM.openSubDetail('${s.id}')" style="cursor:pointer;">
+                  <td><div class="iptvm-client-cell"><span class="iptvm-client-name">${s.client_name}</span><span class="iptvm-client-phone">${s.client_phone || ''}</span></div></td>
+                  <td><span class="iptvm-badge ${s.provider}">${s.provider === 'lumix' ? 'Lumix TV' : 'STlive'}</span></td>
+                  <td style="font-size:12px">${s.device_name || '—'}</td>
+                  <td style="font-size:12px">${this._fmtDate(s.next_payment)}</td>
+                  <td style="color:var(--accent3);font-weight:700">${this._fmtPrice(s.price)}</td>
+                  <td>${this._payStatusBadge(s.payment_status)}</td>
+                </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>` :
+        `<div class="iptvm-empty"><i class="fas fa-satellite-dish"></i><p>Nenhuma assinatura cadastrada ainda</p></div>`;
+
+      body.innerHTML = `
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;">
+          <div class="iptvm-stat"><div class="iptvm-stat-label">Total</div><div class="iptvm-stat-value blue">${stats.total}</div></div>
+          <div class="iptvm-stat"><div class="iptvm-stat-label">Ativas</div><div class="iptvm-stat-value green">${stats.active}</div></div>
+          <div class="iptvm-stat"><div class="iptvm-stat-label">Vencidas</div><div class="iptvm-stat-value red">${stats.overdue}</div></div>
+          <div class="iptvm-stat"><div class="iptvm-stat-label">Receita/mês</div><div class="iptvm-stat-value" style="font-size:16px;color:var(--accent3)">${this._fmtPrice(stats.monthlyRevenue)}</div></div>
+        </div>
+        <h4 style="font-size:13px;font-weight:800;margin-bottom:12px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;">
+          <i class="fas fa-list" style="color:var(--accent3)"></i> Assinaturas
+        </h4>
+        ${subsHtml}`;
+    } catch (err) {
+      body.innerHTML = `<div class="iptvm-empty"><i class="fas fa-exclamation-triangle"></i><p>Erro ao carregar dados</p></div>`;
       console.error(err);
     }
   },

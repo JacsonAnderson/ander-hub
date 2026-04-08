@@ -110,32 +110,52 @@ router.post('/subscriptions', authenticate, resellerOnly, async (req, res) => {
   try {
     const db = getDb();
     const {
-      client_name, client_phone, provider,
-      account_user, account_pass, port, device_name,
-      price, next_payment, notes
+      client_name, client_phone, account_id,
+      port, device_name, price, next_payment, notes
     } = req.body;
 
-    if (!client_name || !provider) {
-      return res.status(400).json({ error: 'Nome do cliente e provedor são obrigatórios' });
+    if (!client_name) {
+      return res.status(400).json({ error: 'Nome do cliente é obrigatório' });
     }
+
+    // Resolve account data from account_id
+    let provider = req.body.provider || '';
+    let account_user = '', account_pass = '';
+    if (account_id) {
+      const accDoc = await db.collection('iptv_accounts').doc(account_id).get();
+      if (!accDoc.exists) return res.status(400).json({ error: 'Conta de provedor não encontrada' });
+      const acc = accDoc.data();
+      provider = acc.provider;
+      account_user = acc.account_user;
+      account_pass = acc.account_pass;
+    }
+
     if (!['lumix', 'stlive'].includes(provider)) {
-      return res.status(400).json({ error: 'Provedor inválido (lumix ou stlive)' });
+      return res.status(400).json({ error: 'Provedor inválido — selecione uma conta de provedor' });
     }
-    // Port only applies to Lumix (1-4)
     if (provider === 'lumix' && port && (port < 1 || port > 4)) {
       return res.status(400).json({ error: 'Porta Lumix deve ser entre 1 e 4' });
     }
 
-    const now = new Date().toISOString();
-    const resellerId = isAdmin(req) ? (req.body.reseller_id || req.user.id) : req.user.id;
-    const resellerName = isAdmin(req) ? (req.body.reseller_name || req.user.name) : req.user.name;
+    // Resolve reseller
+    let resellerId = req.user.id;
+    let resellerName = req.user.name;
+    if (isAdmin(req) && req.body.reseller_id) {
+      const rDoc = await db.collection('users').doc(req.body.reseller_id).get();
+      if (rDoc.exists) {
+        resellerId = rDoc.id;
+        resellerName = rDoc.data().name || '';
+      }
+    }
 
+    const now = new Date().toISOString();
     const data = {
       client_name,
       client_phone: client_phone || '',
       provider,
-      account_user: account_user || '',
-      account_pass: account_pass || '',
+      account_id: account_id || '',
+      account_user,
+      account_pass,
       port: provider === 'lumix' ? (parseInt(port) || null) : null,
       device_name: device_name || '',
       reseller_id: resellerId,
@@ -188,9 +208,27 @@ router.put('/subscriptions/:id', authenticate, resellerOnly, async (req, res) =>
 
     // Admin-only fields
     if (isAdmin(req)) {
-      ['account_user', 'account_pass', 'port', 'provider', 'reseller_id', 'reseller_name'].forEach(f => {
+      ['port', 'provider', 'reseller_id', 'reseller_name'].forEach(f => {
         if (req.body[f] !== undefined) updates[f] = req.body[f];
       });
+      // If account_id changed, re-fetch credentials
+      if (req.body.account_id !== undefined) {
+        updates.account_id = req.body.account_id;
+        if (req.body.account_id) {
+          const db2 = getDb();
+          const accDoc = await db2.collection('iptv_accounts').doc(req.body.account_id).get();
+          if (accDoc.exists) {
+            updates.provider = accDoc.data().provider;
+            updates.account_user = accDoc.data().account_user;
+            updates.account_pass = accDoc.data().account_pass;
+          }
+        }
+      }
+      if (req.body.reseller_id) {
+        const db2 = getDb();
+        const rDoc = await db2.collection('users').doc(req.body.reseller_id).get();
+        if (rDoc.exists) updates.reseller_name = rDoc.data().name || '';
+      }
     }
 
     // Recompute payment_status if next_payment changed
@@ -267,6 +305,37 @@ router.post('/subscriptions/:id/pay', authenticate, resellerOnly, async (req, re
 
 // ── PROVIDER ACCOUNTS (admin only) ───────────────────────────────────────────
 
+// GET /api/iptvm/accounts/:id/subscribers  (admin only)
+router.get('/accounts/:id/subscribers', authenticate, adminOnly, async (req, res) => {
+  try {
+    const db = getDb();
+    const accDoc = await db.collection('iptv_accounts').doc(req.params.id).get();
+    if (!accDoc.exists) return res.status(404).json({ error: 'Conta não encontrada' });
+    const account = { id: accDoc.id, ...accDoc.data() };
+
+    const snap = await db.collection('iptv_subs')
+      .where('account_id', '==', req.params.id)
+      .where('status', '==', 'active')
+      .get();
+    const subs = snapToArr(snap);
+
+    // For Lumix: group by port (1-4). For STlive: single slot
+    if (account.provider === 'lumix') {
+      const maxPorts = account.max_ports || 4;
+      const ports = [];
+      for (let p = 1; p <= maxPorts; p++) {
+        const sub = subs.find(s => s.port === p) || null;
+        ports.push({ port: p, sub });
+      }
+      res.json({ account, ports, total: subs.length });
+    } else {
+      res.json({ account, subs, total: subs.length });
+    }
+  } catch (err) {
+    res.status(500).json({ error: 'Erro ao buscar assinantes', details: err.message });
+  }
+});
+
 // GET /api/iptvm/accounts
 router.get('/accounts', authenticate, adminOnly, async (req, res) => {
   try {
@@ -336,6 +405,31 @@ router.delete('/accounts/:id', authenticate, adminOnly, async (req, res) => {
 });
 
 // ── RESELLERS (admin only) ────────────────────────────────────────────────────
+
+// GET /api/iptvm/resellers/:id/subscriptions  (admin only)
+router.get('/resellers/:id/subscriptions', authenticate, adminOnly, async (req, res) => {
+  try {
+    const db = getDb();
+    const rDoc = await db.collection('users').doc(req.params.id).get();
+    if (!rDoc.exists) return res.status(404).json({ error: 'Revendedor não encontrado' });
+    const reseller = { id: rDoc.id, ...rDoc.data() };
+    delete reseller.password;
+
+    const snap = await db.collection('iptv_subs')
+      .where('reseller_id', '==', req.params.id)
+      .get();
+    const subs = snapToArr(snap).sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''));
+
+    const total = subs.length;
+    const active = subs.filter(s => s.status === 'active').length;
+    const overdue = subs.filter(s => s.payment_status === 'overdue').length;
+    const monthlyRevenue = subs.filter(s => s.status === 'active').reduce((sum, s) => sum + (parseFloat(s.price) || 0), 0);
+
+    res.json({ reseller, subs, stats: { total, active, overdue, monthlyRevenue } });
+  } catch (err) {
+    res.status(500).json({ error: 'Erro ao buscar assinaturas do revendedor', details: err.message });
+  }
+});
 
 // GET /api/iptvm/resellers
 router.get('/resellers', authenticate, adminOnly, async (req, res) => {

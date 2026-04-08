@@ -754,6 +754,38 @@
   </div>
 </div>
 
+<!-- Account Detail Modal -->
+<div class="modal-overlay" id="modal-iptvm-account-detail">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <div class="modal-title"><i class="fas fa-server" style="color:var(--accent);margin-right:8px;"></i>Conta de Provedor</div>
+      <button class="modal-close" onclick="Utils.closeModal('modal-iptvm-account-detail')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body" id="modal-iptvm-account-detail-body">
+      <div class="iptvm-empty"><i class="fas fa-spinner fa-spin"></i><p>Carregando...</p></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="Utils.closeModal('modal-iptvm-account-detail')">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Reseller Detail Modal -->
+<div class="modal-overlay" id="modal-iptvm-reseller-detail">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <div class="modal-title"><i class="fas fa-user-tie" style="color:var(--accent3);margin-right:8px;"></i><span id="modal-iptvm-reseller-detail-title">Revendedor</span></div>
+      <button class="modal-close" onclick="Utils.closeModal('modal-iptvm-reseller-detail')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body" id="modal-iptvm-reseller-detail-body">
+      <div class="iptvm-empty"><i class="fas fa-spinner fa-spin"></i><p>Carregando...</p></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="Utils.closeModal('modal-iptvm-reseller-detail')">Fechar</button>
+    </div>
+  </div>
+</div>
+
 <!-- Reseller Form Modal -->
 <div class="modal-overlay" id="modal-iptvm-reseller-form">
   <div class="modal">
